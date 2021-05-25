@@ -1,6 +1,8 @@
 # weibo
 # 微博版本1.0.0
 
+# git-ljf
+
 weibo     
 ├── weibo-api 			  // 公共接口模块(供服务使用feign调用)
 ├── weibo-gateway         // 网关模块 [8081]
