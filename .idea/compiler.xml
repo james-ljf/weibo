@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="weibo-api" />
         <module name="user-service" />
+        <module name="signup-service" />
         <module name="pay-service" />
         <module name="file-service" />
         <module name="signin-server" />
@@ -22,7 +23,6 @@
         <module name="chat-service" />
         <module name="comment-service" />
         <module name="weibo-message" />
-        <module name="signup-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
