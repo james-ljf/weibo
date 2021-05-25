@@ -49,7 +49,7 @@ public class UserInfoController {
      * @param uId
      * @return
      */
-    @PostMapping("/all")
+    @GetMapping("/all")
     public R selectUserAll(HttpServletRequest request, @RequestParam("uId") Long uId){
         return userInfoService.selectUserAll(uId);
     }

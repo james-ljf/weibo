@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>signin-service</artifactId>
+    <artifactId>signup-service</artifactId>
 
     <description>登录注册服务</description>
 
