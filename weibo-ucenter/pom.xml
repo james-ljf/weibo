@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>weibo</artifactId>
+        <groupId>com.demo</groupId>
+        <version>1.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>weibo-ucenter</artifactId>
+    <packaging>pom</packaging>
+    <description>微博前台</description>
+    <modules>
+        <module>signup-service</module>
+        <module>chat-service</module>
+        <module>comment-service</module>
+        <module>microblog-service</module>
+        <module>vip-service</module>
+        <module>hot-search-service</module>
+        <module>user-service</module>
+        <module>pay-service</module>
+    </modules>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.demo</groupId>
+            <artifactId>weibo-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.demo</groupId>
+            <artifactId>weibo-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
+</project>
