@@ -24,9 +24,9 @@ public class UserAttentionController {
 
     @GetMapping("/add")
     //@UserLoginAnnotation
-    public R addUserAttention(HttpServletRequest request,Long mId, Long uId){
+    public R addUserAttention(HttpServletRequest request, Long uId){
         User user = (User) request.getAttribute("weiboUser");
-        return userAttentionService.addAttention(mId, uId);
+        return userAttentionService.addAttention(user.getId(), uId);
     }
 
 }

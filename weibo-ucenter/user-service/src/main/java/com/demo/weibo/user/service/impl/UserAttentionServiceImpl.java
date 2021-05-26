@@ -28,7 +28,6 @@ public class UserAttentionServiceImpl implements UserAttentionService {
                 }
             }
         }
-
         param.put(uId.toString(), "1");
         redisTemplate.opsForHash().putAll("userAttention:" + mId, param);
         return R.ok("关注成功");

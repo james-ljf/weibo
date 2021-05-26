@@ -20,6 +20,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.time.Duration;
 
 @Configuration
+@SuppressWarnings("all")
 public class RedisConfig {
 
     @Bean
