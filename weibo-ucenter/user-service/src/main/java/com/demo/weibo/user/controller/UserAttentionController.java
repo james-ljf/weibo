@@ -22,6 +22,12 @@ public class UserAttentionController {
     @Autowired
     private UserAttentionService userAttentionService;
 
+    /**
+     * 添加用户关注
+     * @param request
+     * @param uId
+     * @return
+     */
     @GetMapping("/add")
     @UserLoginAnnotation
     public R addUserAttention(HttpServletRequest request, Long uId){
