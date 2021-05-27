@@ -40,8 +40,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public R selectUserAll(Long uId) {
+        //先查缓存有没有
         List<UserDetail> userDetailList = redisTemplate.opsForList().range("userDetailList:" + uId, 0, -1);
-        //查缓存
         if (userDetailList != null && userDetailList.size() > 0){
             return R.ok("获取用户信息成功").addData("userDetailList", userDetailList);
         }
@@ -52,7 +52,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (userDetailList == null){
             return R.error("获取信息失败");
         }
-        redisTemplate.opsForList().leftPushAll("userDetailList:" + uId, userDetailList);
+        redisTemplate.opsForList().rightPushAll("userDetailList:" + uId, userDetailList);
         //stringRedisTemplate.opsForValue().set("userEmail:" + uId, userDetail.getEmail());
         //将email中间部分用*代替
         return R.ok("获取用户信息成功").addData("userDetailList", userDetailList);

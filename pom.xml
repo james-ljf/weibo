@@ -40,6 +40,7 @@
         <spring.cloud.version>Hoxton.SR8</spring.cloud.version>
         <hutool.version>5.6.5</hutool.version>
         <rocketmq.version>2.2.0</rocketmq.version>
+        <redisson.version>3.15.0</redisson.version>
     </properties>
 
     <!--帮助管理项目中用到的依赖以及版本-->
@@ -153,6 +154,13 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
                 <version>5.6.0</version>
+            </dependency>
+
+            <!--布隆过滤器-->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>${redisson.version}</version>
             </dependency>
 
             <!--通用模块-->

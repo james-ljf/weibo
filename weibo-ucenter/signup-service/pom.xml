@@ -11,7 +11,7 @@
 
     <artifactId>signup-service</artifactId>
 
-    <description>登录注册服务</description>
+    <description>账号操作服务</description>
 
     <dependencies>
         <dependency>
