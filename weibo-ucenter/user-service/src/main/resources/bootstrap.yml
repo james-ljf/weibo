@@ -18,3 +18,7 @@ spring:
             group: WEIBO
   application:
     name: user-service
+rocketmq:
+  name-server: localhost:9876
+  producer:
+    group: ATTENTION-GROUP
