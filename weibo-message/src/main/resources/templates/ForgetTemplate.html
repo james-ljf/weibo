@@ -1,0 +1,28 @@
+
+<style>
+    .code{
+        color: #444;
+        text-indent: 2em;
+        text-align: left;
+    }
+    .b{
+        font-weight: bold;
+        color: dodgerblue;
+        text-align: left;
+    }
+    .f-size{
+        font-size: 18px;
+    }
+    .em{
+        color: cornflowerblue;
+    }
+</style>
+
+
+
+<div id="email" style="width: 100%;text-align:center;">
+    <p class="b f-size">密码重置验证码</p>
+    <p class="code">请使用此验证码为你的邮箱$<span th:text="${to}"></span>绑定的账户重置密码</p>
+    <br>
+    <p class="code">你的验证码为<span class="b" th:text="${content}"></span>,验证码的有效时间为180秒。</p>
+</div>

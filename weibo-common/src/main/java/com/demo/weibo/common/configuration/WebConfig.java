@@ -52,7 +52,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     @Primary
-    @SuppressWarnings("all")
     public ObjectMapper jacksonObjectMapper(Jackson2ObjectMapperBuilder builder)
     {
         ObjectMapper objectMapper = builder.createXmlMapper(false).build();

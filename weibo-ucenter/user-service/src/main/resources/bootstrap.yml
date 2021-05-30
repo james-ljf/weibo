@@ -16,9 +16,30 @@ spring:
         shared-configs:
           - data-id: weibo-common.yaml
             group: WEIBO
+    stream:
+      rocketmq:
+        binder:
+          name-server: 192.168.163.175:9876
+          enable-msg-trace: true
+#        bindings:
+#          getAttention:
+#            consumer:
+#              tags: tag2 || tag1 ||tag3 ||tag4
+      bindings:
+        input:
+          destination: user
+          group: ATTENTION
+          content-type: application/json
+        output:
+          destination: user
+          content-type: application/json
+#          output:
+#            destination: user
+#          input:
+#            destination: user
+#            group: ATTENTION-GROUP
   application:
     name: user-service
-rocketmq:
-  name-server: localhost:9876
-  producer:
-    group: ATTENTION-GROUP
+
+
+

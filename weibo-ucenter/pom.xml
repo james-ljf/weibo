@@ -25,6 +25,7 @@
 
 
     <dependencies>
+
         <dependency>
             <groupId>com.demo</groupId>
             <artifactId>weibo-common</artifactId>
@@ -35,7 +36,10 @@
             <artifactId>weibo-api</artifactId>
         </dependency>
 
-
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-stream-rocketmq</artifactId>
+        </dependency>
 
     </dependencies>
 </project>
