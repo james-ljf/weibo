@@ -21,6 +21,7 @@
         <module>weibo-gateway</module>
         <module>weibo-message</module>
         <module>weibo-file</module>
+        <module>weibo-util</module>
     </modules>
 
     <!--项目的版本管理-->

@@ -10,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Map;
 
 /**
- *  注销账号、找回密码
+ *  注销账号、找回密码、查询所有用户的id
  */
 @RestController
 @RequestMapping("/sign/account")
@@ -27,7 +28,7 @@ public class AccountController {
      * @param request
      * @return
      */
-    @GetMapping("logoff")
+    @GetMapping("/logoff")
     @UserLoginAnnotation
     public R logoffAccount(HttpServletRequest request){
         request.getAttribute("weiboUser");
@@ -39,7 +40,7 @@ public class AccountController {
      * @param param 找回密码需要的信息(邮箱)
      * @return
      */
-    @PostMapping("forget")
+    @PostMapping("/forget")
     public R forgetPassword(Map<String, String> param){
         return accountService.ForgetPassword(param);
     }
@@ -49,12 +50,17 @@ public class AccountController {
      * @param param
      * @return
      */
-    @GetMapping("isVerify")
+    @GetMapping("/isVerify")
     public R isUserForgetVerify(Map<String, String> param){
         if (param.get("email") == null || param.get("verify") == null){
             return R.error("提交的信息不完全");
         }
         return accountService.isUserForgetVerify(param);
+    }
+
+    @PostMapping("/select-all")
+    public List<Long> selectAllId(){
+        return accountService.selectAllId();
     }
 
 }

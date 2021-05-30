@@ -1,5 +1,6 @@
 package com.demo.weibo.signup.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.demo.weibo.common.entity.User;
 import com.demo.weibo.common.util.R;
@@ -8,9 +9,13 @@ import com.demo.weibo.signup.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+@Service
 public class AccountServiceImpl implements AccountService {
 
     @Autowired
@@ -44,6 +49,18 @@ public class AccountServiceImpl implements AccountService {
             return R.error("验证码不正确");
         }
         return R.ok("验证成功，进入下一步");
+    }
+
+    @Override
+    public List<Long> selectAllId() {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.select("id");
+        List<User> list = userMapper.selectList(queryWrapper);
+        List<Long> idList = new ArrayList<>();
+        for (User user : list) {
+            idList.add(user.getId());
+        }
+        return idList;
     }
 
 }

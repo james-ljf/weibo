@@ -1,5 +1,6 @@
 package com.demo.weibo.email.configuration;
 
+import org.apache.axis.encoding.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -9,10 +10,17 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import javax.annotation.PostConstruct;
+import javax.imageio.ImageIO;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Objects;
 
 @Component
 public class EmailSender {
@@ -22,6 +30,20 @@ public class EmailSender {
 
     @Autowired
     private TemplateEngine templateEngine;
+
+    private String base64Logo;
+
+    @PostConstruct
+    public void initLogo(){
+        try {
+            BufferedImage image = ImageIO.read(Objects.requireNonNull(EmailSender.class.getResourceAsStream("/static/image/logo.png")));
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            ImageIO.write(image, "gif", stream);
+            base64Logo = "data:image/gif;base64," + Base64.encode(stream.toByteArray());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 发送简单邮件的方法
@@ -55,6 +77,7 @@ public class EmailSender {
     public void sendHtmlEmail(String to, String title, String content, String templateName){
         //创建一个Thymeleaf的Context对象
         Context context = new Context();
+        context.setVariable("logo", base64Logo);
         //设置参数
         context.setVariable("content", content);
         //生成一个字符串类型的内容（将模板页面和上下文对象绑定）

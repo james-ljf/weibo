@@ -26,11 +26,11 @@ spring:
 #            consumer:
 #              tags: tag2 || tag1 ||tag3 ||tag4
       bindings:
-        input:
+        getAttention:
           destination: user
           group: ATTENTION
           content-type: application/json
-        output:
+        setAttention:
           destination: user
           content-type: application/json
 #          output:

@@ -1,6 +1,7 @@
 package com.demo.weibo.user.controller;
 
 import com.demo.weibo.common.entity.User;
+import com.demo.weibo.common.entity.mq.Attention;
 import com.demo.weibo.common.util.R;
 import com.demo.weibo.user.consumer.AttentionBinding;
 import com.demo.weibo.user.service.UserAttentionService;
@@ -40,16 +41,8 @@ public class UserAttentionController {
     //@UserLoginAnnotation
     public R addUserAttention(HttpServletRequest request,@RequestParam("mid") Long mid,@RequestParam("uid") Long uid){
         User user = (User) request.getAttribute("weiboUser");
-        Map<String, Object> param = new HashMap();
-        param.put("mid", mid);
-        param.put("uid", uid);
-        param.put("code", "1");
-        attention.setAttention().send(MessageBuilder.withPayload(param).build());
-
-
-//        this.source.output().send(
-//                MessageBuilder.withPayload(param).build()
-//        );
+        Attention a = new Attention(mid, uid, 1);
+        attention.setAttention().send(MessageBuilder.withPayload(a).build());
 
 
         return R.ok("关注成功");

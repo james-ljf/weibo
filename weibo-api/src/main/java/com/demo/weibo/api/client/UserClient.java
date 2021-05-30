@@ -4,8 +4,9 @@ import com.demo.weibo.common.entity.UserDetail;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
+
 /**
- * From user-service 服务
+ * From 用户 服务
  */
 @FeignClient(value = "user-service")
 public interface UserClient {
@@ -33,4 +34,5 @@ public interface UserClient {
      */
     @PostMapping("/user/info/all")
     UserDetail selectUserAll(@RequestParam("uId") Long uId);
+
 }
