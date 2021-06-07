@@ -1,5 +1,8 @@
 package com.demo.weibo.common.util.file;
 
+import cn.hutool.core.io.FileTypeUtil;
+import org.springframework.web.multipart.MultipartFile;
+
 /**
  * 媒体类型工具类
  * 
@@ -37,6 +40,50 @@ public class MediaTypeUtils
             "mp4", "avi", "rmvb",
             // pdf
             "pdf" };
+
+    /**
+     * 判断是否是图片
+     * @param file
+     * @return 0 上传类型不全是图片   1 上传的全是图片
+     */
+    public static String getImage(MultipartFile[] file){
+        boolean img = false;
+        for (MultipartFile multipartFile : file) {
+            //获取上传文件原始名称
+            String originalFilename = multipartFile.getOriginalFilename();
+            //获取文件类型
+            String fileType = FileTypeUtil.getType(originalFilename);
+            //判断是否是图片类型
+            for (String s : IMAGE_EXTENSION) {
+                //判断当前是不是图片类型，是的话img+1
+                if (fileType.equals(s)) {
+                    img = true;
+                    break;
+                }
+            }
+            for (String r : VIDEO_EXTENSION) {
+                //判断是不是有视频类型，有的话video+1
+                if (fileType.equals(r)){
+                    img = false;
+                    return "0";
+                }
+            }
+        }
+        if (img = false){
+            return "0";
+        }
+       return "1";
+    }
+
+
+    public static String getVideo(String type){
+        for (String s : VIDEO_EXTENSION) {
+            if (type.equals(s)){
+                return s;
+            }
+        }
+        return "";
+    }
 
     public static String getExtension(String prefix)
     {

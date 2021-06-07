@@ -16,16 +16,14 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+//@SuppressWarnings("all")
 public class UserInfoServiceImpl implements UserInfoService {
 
     @Autowired
     private UserDetailMapper userDetailMapper;
 
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
-    @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public Integer addUserInfo(UserDetail userDetail) {
@@ -41,21 +39,20 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Override
     public R selectUserAll(Long uId) {
         //先查缓存有没有
-        List<UserDetail> userDetailList = redisTemplate.opsForList().range("userDetailList:" + uId, 0, -1);
-        if (userDetailList != null && userDetailList.size() > 0){
-            return R.ok("获取用户信息成功").addData("userDetailList", userDetailList);
+        UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + uId);
+        if (userDetail != null){
+            return R.ok("获取用户信息成功").addData("userDetail", userDetail);
         }
         //缓存没有，查数据库
-        Map<String, Object> map = new HashMap<>();
-        map.put("u_id", uId);
-        userDetailList = userDetailMapper.selectByMap(map);
-        if (userDetailList == null){
+        QueryWrapper<UserDetail> wrapper = new QueryWrapper<>();
+        userDetail = userDetailMapper.selectOne(wrapper.eq("u_id", uId));
+        if (userDetail == null){
             return R.error("获取信息失败");
         }
-        redisTemplate.opsForList().rightPushAll("userDetailList:" + uId, userDetailList);
+        redisTemplate.opsForValue().set("UserDetail:" + uId, userDetail);
         //stringRedisTemplate.opsForValue().set("userEmail:" + uId, userDetail.getEmail());
         //将email中间部分用*代替
-        return R.ok("获取用户信息成功").addData("userDetailList", userDetailList);
+        return R.ok("获取用户信息成功").addData("userDetail", userDetail);
     }
 
     @Override

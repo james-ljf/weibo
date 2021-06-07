@@ -37,7 +37,7 @@
         <weibo.version>1.0.0</weibo.version>
         <lombok.version>1.16.18</lombok.version>
         <druid.version>1.1.12</druid.version>
-        <spring.cloud.alibaba.version>2.2.3.RELEASE</spring.cloud.alibaba.version>
+        <spring.cloud.alibaba.version>2.2.5.RELEASE</spring.cloud.alibaba.version>
         <spring.cloud.version>Hoxton.SR8</spring.cloud.version>
         <hutool.version>5.6.5</hutool.version>
         <rocketmq.version>2.2.0</rocketmq.version>
@@ -144,17 +144,30 @@
                 <version>${hutool.version}</version>
             </dependency>
 
-<!--            <dependency>-->
-<!--                <groupId>org.apache.rocketmq</groupId>-->
-<!--                <artifactId>rocketmq-spring-boot-starter</artifactId>-->
-<!--                <version>${rocketmq.version}</version>-->
-<!--            </dependency>-->
-
 
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>
                 <version>5.6.0</version>
+            </dependency>
+
+            <!-- 解析MongoDB文档-->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>1.2.37</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>1.2.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.tobato</groupId>
+                <artifactId>fastdfs-client</artifactId>
+                <version>1.26.1-RELEASE</version>
             </dependency>
 
             <!--布隆过滤器-->

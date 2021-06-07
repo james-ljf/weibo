@@ -17,10 +17,9 @@ public class BloomFilterInit implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         List<Long> list = signClient.selectAllId();
-        RedissonBloomFilter bloomFilter = new RedissonBloomFilter();
         for (Long aLong : list) {
-            bloomFilter.add(aLong.toString());
+            RedissonBloomFilter.add(aLong.toString());
         }
-        System.out.println("正在初始化");
+        System.out.println("布隆过滤器正在初始化");
     }
 }

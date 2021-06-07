@@ -19,12 +19,8 @@ spring:
     stream:
       rocketmq:
         binder:
-          name-server: 192.168.163.175:9876
+          name-server: 192.168.1.104:9876
           enable-msg-trace: true
-#        bindings:
-#          getAttention:
-#            consumer:
-#              tags: tag2 || tag1 ||tag3 ||tag4
       bindings:
         getAttention:
           destination: user
@@ -33,11 +29,8 @@ spring:
         setAttention:
           destination: user
           content-type: application/json
-#          output:
-#            destination: user
-#          input:
-#            destination: user
-#            group: ATTENTION-GROUP
+  data:
+    elasticsearch:
   application:
     name: user-service
 

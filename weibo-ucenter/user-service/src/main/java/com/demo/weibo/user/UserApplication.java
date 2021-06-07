@@ -1,10 +1,11 @@
 package com.demo.weibo.user;
 
 import com.demo.weibo.common.annotation.StartApplication;
-import com.demo.weibo.user.consumer.AttentionBinding;
+import com.demo.weibo.user.binding.AttentionBinding;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @StartApplication
 @EnableBinding({AttentionBinding.class})

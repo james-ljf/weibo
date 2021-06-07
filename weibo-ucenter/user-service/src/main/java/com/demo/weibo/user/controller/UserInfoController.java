@@ -1,6 +1,7 @@
 package com.demo.weibo.user.controller;
 
 import com.demo.weibo.common.annotation.UserLoginAnnotation;
+import com.demo.weibo.common.entity.User;
 import com.demo.weibo.common.entity.UserDetail;
 import com.demo.weibo.common.util.R;
 import com.demo.weibo.user.service.UserInfoService;
@@ -45,13 +46,25 @@ public class UserInfoController {
     }
 
     /**
-     * 查询用户所有信息
+     * 查询某用户所有信息
      * @param uId
      * @return
      */
-    @GetMapping("/all")
-    public R selectUserAll(HttpServletRequest request, @RequestParam("uId") Long uId){
+    @GetMapping("/all/{uId}")
+    public R selectUserAll( @PathVariable Long uId){
         return userInfoService.selectUserAll(uId);
+    }
+
+    /**
+     * 查询自己的所有信息
+     * @param request
+     * @return
+     */
+    @GetMapping("/my-all")
+    @UserLoginAnnotation
+    public R selectUserAll(HttpServletRequest request){
+        User user = (User) request.getAttribute("weiboUser");
+        return userInfoService.selectUserAll(user.getId());
     }
 
     /**

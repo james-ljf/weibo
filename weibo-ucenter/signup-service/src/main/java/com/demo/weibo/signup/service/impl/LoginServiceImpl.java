@@ -28,7 +28,7 @@ public class LoginServiceImpl implements LoginService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private UserMapper userMapper;
@@ -51,6 +51,7 @@ public class LoginServiceImpl implements LoginService {
         if (!passwordEncoder.matches(user.getPassword(), loginUser.getPassword())){
             return R.error("密码错误");
         }
+        loginUser.setPassword(null);
         //存入Redis
         redisTemplate.opsForValue().set("loginUser:" + loginUser.getId(), loginUser, 1, TimeUnit.HOURS);
         //生成Token

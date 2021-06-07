@@ -90,11 +90,4 @@ public class IdGenerator {
         return ObjectId.next();
     }
 
-
-
-    public static void main(String[] args) {
-        System.out.println(snowflakeId(10,4));
-
-    }
-
 }

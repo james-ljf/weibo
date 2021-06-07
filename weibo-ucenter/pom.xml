@@ -18,7 +18,7 @@
         <module>comment-service</module>
         <module>microblog-service</module>
         <module>vip-service</module>
-        <module>hot-search-service</module>
+        <module>search-service</module>
         <module>user-service</module>
         <module>pay-service</module>
     </modules>
