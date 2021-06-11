@@ -13,14 +13,14 @@
     <packaging>pom</packaging>
     <description>微博前台</description>
     <modules>
-        <module>signup-service</module>
-        <module>chat-service</module>
-        <module>comment-service</module>
-        <module>microblog-service</module>
-        <module>vip-service</module>
-        <module>search-service</module>
-        <module>user-service</module>
-        <module>pay-service</module>
+        <module>signup-service-9061</module>
+        <module>chat-service-9011</module>
+        <module>comment-service-9021</module>
+        <module>microblog-service-9031</module>
+        <module>vip-service-9081</module>
+        <module>search-service-9051</module>
+        <module>user-service-9071</module>
+        <module>pay-service-9041</module>
     </modules>
 
 

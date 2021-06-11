@@ -1,0 +1,33 @@
+#weibo-file port from 9100 to 9110
+server:
+  port: 9100
+
+fdfs:
+  so-timeout: 1500  #超时时间
+  connect-timeout: 600  #连接的超时时间
+  tracker-list: #服务配置地址ip与端口
+  #连接池
+  pool:
+    jmx-enabled: false
+  thumb-image:
+    height: 100
+    width: 100
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        group: WEIBO
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        file-extension: yaml
+        shared-configs:
+          - data-id: weibo-common.yaml
+            group: WEIBO
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  application:
+    name: file-service

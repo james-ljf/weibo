@@ -1,0 +1,22 @@
+#weibo-message port from 9001 to 9010
+server:
+  port: 9001
+
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        group: WEIBO
+        namespace: public
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        file-extension: yaml
+        shared-configs:
+          - data-id: weibo-common.yaml
+            group: WEIBO
+          - data-id: email-server.yaml
+            group: WEIBO
+  application:
+    name: email-service

@@ -34,7 +34,7 @@ public class Microblog {
     /**
      * 微博内容
      */
-    @Field(type = FieldType.Text,analyzer = "ik_max_word")
+    @Field(type = FieldType.Text,analyzer = "ik_smart")
     private String cContent;
 
     /**

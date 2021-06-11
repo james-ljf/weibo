@@ -1,0 +1,31 @@
+#microblog-service port from 9031 to 9040
+server:
+  port: 9031
+
+spring:
+  data:
+    mongodb:
+      database: weibo
+      port: 27017
+      host: 127.0.0.1
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        group: WEIBO
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        file-extension: yaml
+        shared-configs:
+          - data-id: weibo-common.yaml
+            group: WEIBO
+  application:
+    name: microblog-service
+  elasticsearch:
+    rest:
+      uris: localhost:9200

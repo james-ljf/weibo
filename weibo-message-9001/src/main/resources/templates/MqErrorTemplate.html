@@ -1,0 +1,26 @@
+
+<style>
+    .code{
+        color: #444;
+        text-indent: 2em;
+        text-align: left;
+    }
+    .b{
+        font-weight: bold;
+        color: dodgerblue;
+        text-align: left;
+    }
+    .f-size{
+        font-size: 18px;
+    }
+    .em{
+        color: cornflowerblue;
+    }
+</style>
+
+
+
+<div id="email" style="width: 100%;text-align:center;">
+    <p class="b f-size">你好开发者，目前关注服务出现了一些意料之外的错误：</p>
+    <p class="code" th:text="${content}"></p>
+</div>
