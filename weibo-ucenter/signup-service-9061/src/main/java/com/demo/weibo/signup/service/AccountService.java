@@ -15,4 +15,6 @@ public interface AccountService {
 
     List<String> selectAllAccount();
 
+    R updateUserPassword(Long uId, Map<String, Object> param);
+
 }

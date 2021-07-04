@@ -8,4 +8,6 @@ public interface MicroblogOperationService {
 
     R cancelLikeWeibo(Long uId, Long cId);
 
+    boolean isLikeMicroblog(Long cId, Long uId);
+
 }

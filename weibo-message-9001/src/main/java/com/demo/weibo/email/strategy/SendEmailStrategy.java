@@ -8,7 +8,7 @@ public interface SendEmailStrategy {
     /**
      * 判断当前的策略是不是“我的策略”
      * @param strategy 字符串的策略值
-     * @return
+     * @return boolean
      */
     boolean isMyStrategy(String strategy);
 
@@ -16,7 +16,7 @@ public interface SendEmailStrategy {
      * 当是我的策略的时候执行的内容
      * @param to        发送给谁
      * @param content   发送的内容
-     * @return
+     * @return  R
      */
     R callback(String to, String content);
 

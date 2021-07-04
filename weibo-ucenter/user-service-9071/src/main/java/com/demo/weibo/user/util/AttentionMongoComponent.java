@@ -59,7 +59,7 @@ public class AttentionMongoComponent {
         AggregationResults<JSONObject> reminds = mongoTemplate
                 .aggregate(aggregation, "UserAttention", JSONObject.class);
         List<JSONObject> mappedResults = reminds.getMappedResults();
-        if (mappedResults != null && mappedResults.size() > 0) {
+        if (mappedResults.size() > 0) {
             //获取attentionList数组的一个对象
             a  = JSONObject.parseObject(mappedResults.get(0).getJSONObject("attentionList").toJSONString());
         }
@@ -77,6 +77,11 @@ public class AttentionMongoComponent {
         return mongoTemplate.findOne(query, UserAttention.class);
     }
 
+    /**
+     * 查询关注子文档数组
+     * @param uId
+     * @return
+     */
     public List<JSONObject> selectAttentionList(Long uId){
         //封装对象列表查询条件
         List<AggregationOperation> commonOperations = new ArrayList<>();
@@ -86,6 +91,58 @@ public class AttentionMongoComponent {
         //指定投影，返回哪些字段
         ProjectionOperation project = Aggregation.project("attentionList");
         commonOperations.add(project);
+        //创建管道查询对象
+        Aggregation aggregation = Aggregation.newAggregation(commonOperations);
+        AggregationResults<JSONObject> reminds = mongoTemplate
+                .aggregate(aggregation, "UserAttention", JSONObject.class);
+        //返回 List<JSONObject>类型 的查询结果
+        return reminds.getMappedResults();
+    }
+
+    /**
+     * 查询粉丝子文档数组
+     * @param uId
+     * @return
+     */
+    public List<JSONObject> selectFansList(Long uId){
+        //封装对象列表查询条件
+        List<AggregationOperation> commonOperations = new ArrayList<>();
+        //指定查询主文档
+        MatchOperation match = Aggregation.match(Criteria.where("_id").is(uId));
+        commonOperations.add(match);
+        //指定投影，返回哪些字段
+        ProjectionOperation project = Aggregation.project("fansList");
+        commonOperations.add(project);
+        //创建管道查询对象
+        Aggregation aggregation = Aggregation.newAggregation(commonOperations);
+        AggregationResults<JSONObject> reminds = mongoTemplate
+                .aggregate(aggregation, "UserAttention", JSONObject.class);
+        //返回 List<JSONObject>类型 的查询结果
+        return reminds.getMappedResults();
+    }
+
+
+    /**
+     * 查询子文档符合条件的数组
+     * @param uId
+     * @return
+     */
+    public List<JSONObject> selectFriendList(Long uId){
+        //封装对象列表查询条件
+        List<AggregationOperation> commonOperations = new ArrayList<>();
+        //指定查询主文档
+        MatchOperation match = Aggregation.match(Criteria.where("_id").is(uId));
+        commonOperations.add(match);
+        //指定投影，返回哪些字段
+        ProjectionOperation project = Aggregation.project("attentionList");
+        commonOperations.add(project);
+        // 拆分内嵌文档
+        UnwindOperation unwind = Aggregation.unwind("attentionList");
+        commonOperations.add(unwind);
+        //指定查询子文档,条件：关注状态为互相关注的
+        MatchOperation match2 = Aggregation.match(
+                Criteria.where("attentionList.aCode").is(2));
+        commonOperations.add(match2);
         //创建管道查询对象
         Aggregation aggregation = Aggregation.newAggregation(commonOperations);
         AggregationResults<JSONObject> reminds = mongoTemplate

@@ -75,7 +75,7 @@ public class UserLoginAspect {
             }
 
             //刷新用户的登录状态
-            redisTemplate.expire("loginUser:" + data.get("id"), 1, TimeUnit.HOURS);
+            redisTemplate.expire("loginUser:" + data.get("id"), 12, TimeUnit.HOURS);
             //存入request
             request.setAttribute("weiboUser", user);
         }else if (needLogin && !StringUtils.hasText(token)){

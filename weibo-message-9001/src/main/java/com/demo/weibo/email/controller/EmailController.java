@@ -30,6 +30,7 @@ public class EmailController {
      */
     @PostMapping("/send-email")
     public Object sendEmail(@RequestBody Map<String, String> body){
+        System.out.println("我进来邮件了吗");
         String email = body.get("to");
         if (!FormatUtil.checkEmail(email)){
             return R.error("邮箱格式不正确！");

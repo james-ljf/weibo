@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @Document("Message")
 /**
- * 关注消息实体类
+ * 消息实体类
  */
 public class U2 {
 

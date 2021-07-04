@@ -20,11 +20,11 @@ public class BloomFilterInit implements CommandLineRunner {
         for (Long aLong : uIdList) {
             RedissonBloomFilter.add(aLong.toString());
         }
-        System.out.println("布隆过滤器正在初始化用户id");
+        System.out.println("布隆过滤器初始化用户id成功");
         List<String> accountList = signClient.selectAllAccount();
         for (String s : accountList) {
             RedissonBloomFilter.add(s);
         }
-        System.out.println("布隆过滤器正在初始化用户账号");
+        System.out.println("布隆过滤器初始化用户账号成功");
     }
 }

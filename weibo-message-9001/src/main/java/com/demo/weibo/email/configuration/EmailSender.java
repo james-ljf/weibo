@@ -92,7 +92,7 @@ public class EmailSender {
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
             //设置从哪里发送
-            helper.setFrom(new InternetAddress("17687443422@163.com", "旧浪微博", "UTF-8"));
+            helper.setFrom(new InternetAddress("17687443422@163.com", "旧浪微博官方", "UTF-8"));
             //设置发送给谁
             helper.setTo(to);
             //设置标题

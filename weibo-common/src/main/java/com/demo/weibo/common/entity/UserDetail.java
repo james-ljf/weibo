@@ -1,14 +1,20 @@
 package com.demo.weibo.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * 用户详细信息
+ */
 @Data
 @Accessors(chain = true)
+//@Document(indexName = "UserDetail")
 public class UserDetail {
 
     /**
@@ -20,6 +26,7 @@ public class UserDetail {
     /**
      * 用户id
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long uId;
 
     /**
@@ -93,7 +100,7 @@ public class UserDetail {
     private Integer attention;
 
     /**
-     * 用户是否已认证(0没有，1已认证)
+     * 用户是否已认证(0没有，1已认证，2认证中)
      */
     private Integer authentication;
 

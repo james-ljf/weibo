@@ -12,4 +12,11 @@
     <artifactId>pay-service</artifactId>
 
     <description>支付服务</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.alipay.sdk</groupId>
+            <artifactId>alipay-sdk-java</artifactId>
+        </dependency>
+    </dependencies>
 </project>

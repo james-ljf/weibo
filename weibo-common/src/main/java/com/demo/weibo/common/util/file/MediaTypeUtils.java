@@ -3,6 +3,8 @@ package com.demo.weibo.common.util.file;
 import cn.hutool.core.io.FileTypeUtil;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * 媒体类型工具类
  * 
@@ -46,7 +48,7 @@ public class MediaTypeUtils
      * @param file
      * @return 0 上传类型不全是图片   1 上传的全是图片
      */
-    public static String getImage(MultipartFile[] file){
+    public static String getImage(List<MultipartFile> file){
         boolean img = false;
         for (MultipartFile multipartFile : file) {
             //获取上传文件原始名称

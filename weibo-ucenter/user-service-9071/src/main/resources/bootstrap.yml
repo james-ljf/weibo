@@ -28,7 +28,7 @@ spring:
     stream:
       rocketmq:
         binder:
-          name-server: 127.0.0.1:9876
+          name-server: 192.168.1.104:9876
           enable-msg-trace: true
       bindings:
         getAttention:
@@ -38,9 +38,9 @@ spring:
         setAttention:
           destination: user
           content-type: application/json
-  elasticsearch:
-    rest:
-      uris: localhost:9200
+#  elasticsearch:
+#    rest:
+#      uris: localhost:9200
   application:
     name: user-service
 

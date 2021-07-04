@@ -9,6 +9,6 @@ public interface RegisterService {
 
     boolean emailExist(String email);
 
-    R registerUser(User user, String email, String email_code);
+    R registerUser(User user, String email, String email_verify);
 
 }

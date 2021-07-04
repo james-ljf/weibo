@@ -1,8 +1,13 @@
 package com.demo.weibo.api.client;
 
+import com.alibaba.fastjson.JSONObject;
 import com.demo.weibo.common.entity.UserDetail;
+import com.demo.weibo.common.util.R;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 
 /**
@@ -27,12 +32,27 @@ public interface UserClient {
     @GetMapping("/user/info/select-email")
     UserDetail selectUserEmail(@RequestParam("email") String email);
 
+//    /**
+//     * 根据u_id查询用户所有信息
+//     * @param uId
+//     * @return
+//     */
+//    @PostMapping("/user/info/all/{uId}")
+//    UserDetail selectUserAll(@PathVariable("uId") Long uId);
+
     /**
-     * 根据u_id查询用户所有信息
-     * @param uId
+     * 查询自己所有信息
      * @return
      */
     @PostMapping("/user/info/all")
-    UserDetail selectUserAll(@RequestParam("uId") Long uId);
+    List<UserDetail> selectAll();
+
+    /**
+     * 查询自己所有关注
+     * @param uId   自己的id
+     * @return  List
+     */
+    @GetMapping("/user/attention/myself-attention")
+    List<JSONObject> findAllMyAttention(@RequestParam("uId") Long uId);
 
 }

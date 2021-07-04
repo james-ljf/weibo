@@ -21,7 +21,7 @@ public class RegisterController {
     private RegisterService registerService;
 
     /**
-     * 判断账号是否已被注册
+     * 判断账号是否存在
      * @param account 账号
      * @return R
      */
@@ -30,7 +30,7 @@ public class RegisterController {
         if (!FormatUtil.checkAccount(account)){
             return R.error("账号格式不正确");
         }
-        return registerService.accountExist(account) ? R.error("该账号已被注册") : R.ok("该账号可以使用");
+        return registerService.accountExist(account) ? R.error("该账号存在") : R.ok("该账号可以使用");
     }
 
     /**
@@ -66,7 +66,7 @@ public class RegisterController {
         if (!ObjectUtil.checkFieldsNotEmptyIncludes(user, "account", "password") || params.get("email") == null || params.get("email").equals("")){
             return R.error("您提交的信息不全！");
         }
-        return registerService.registerUser(user, params.get("email"), params.get("email_code"));
+        return registerService.registerUser(user, params.get("email"), params.get("email_verify"));
     }
 
 }

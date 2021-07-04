@@ -1,0 +1,20 @@
+#vip-service port from 9060 to 9061
+server:
+  port: 9081
+
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        group: WEIBO
+        namespace: public
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        file-extension: yaml
+        shared-configs:
+          - data-id: weibo-common.yaml
+            group: WEIBO
+  application:
+    name: vip-service

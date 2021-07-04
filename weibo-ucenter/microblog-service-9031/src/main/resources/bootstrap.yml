@@ -10,8 +10,8 @@ spring:
       host: 127.0.0.1
   servlet:
     multipart:
-      max-file-size: 200MB
-      max-request-size: 200MB
+      max-file-size: 500MB
+      max-request-size: 500MB
   cloud:
     nacos:
       discovery:
@@ -26,6 +26,3 @@ spring:
             group: WEIBO
   application:
     name: microblog-service
-  elasticsearch:
-    rest:
-      uris: localhost:9200

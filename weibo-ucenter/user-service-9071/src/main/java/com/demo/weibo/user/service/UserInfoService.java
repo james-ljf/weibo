@@ -16,5 +16,7 @@ public interface UserInfoService {
 
     R updateUserInfo(UserDetail userDetail);
 
-    R uploadUserAvatar(Long uId, MultipartFile file);
+    R uploadUserAvatar(Long uId, String avatar);
+
+    List<UserDetail> selectAll();
 }

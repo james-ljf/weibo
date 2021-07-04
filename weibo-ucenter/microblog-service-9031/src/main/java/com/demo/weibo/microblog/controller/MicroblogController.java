@@ -4,14 +4,17 @@ import com.demo.weibo.api.client.FileClient;
 import com.demo.weibo.common.annotation.UserLoginAnnotation;
 import com.demo.weibo.common.entity.Microblog;
 import com.demo.weibo.common.entity.User;
+import com.demo.weibo.common.entity.msg.Weibo;
 import com.demo.weibo.common.util.R;
 import com.demo.weibo.common.util.file.MediaTypeUtils;
+import com.demo.weibo.common.util.id.IdGenerator;
 import com.demo.weibo.microblog.service.MicroblogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -27,46 +30,101 @@ public class MicroblogController {
     /**
      * 发布微博
      * @param request 当前用户id
-     * @param microblog 微博实体类数据
-     * @param file  文件（图片、视频）
+     * @param cContent 微博内容
      * @return R
      */
     @PostMapping("/release")
     @UserLoginAnnotation
     public R releaseMicroblog(HttpServletRequest request,
-                              @RequestBody Microblog microblog,
-                              @RequestParam(value = "file",required=false) MultipartFile[] file){
+                              @RequestParam("c_content") String cContent,
+                              @RequestParam("image") List<String> imageList,
+                              @RequestParam("video") String video){
         User user = (User) request.getAttribute("weiboUser");
-        if (file.length == 1){
-            //上传的是视频
-            String videoFile = fileClient.uploadOneFile(file[0]);
-            microblog.setCVideo(videoFile);
-        }else {
-            //判断是否都是图片类型
-            String state = MediaTypeUtils.getImage(file);
-            if (state.equals("0")){
-                return R.error("您的上传类型不统一，请重新上传。");
-            }
-            //上传的是图片
-            List<String> fileList = fileClient.uploadImage(file);
-            microblog.setCImage(fileList);
+        Microblog microblog = new Microblog();
+
+        //如果有视频
+        if (video != null){
+            microblog.setCVideo(video);
         }
 
+        if (imageList.size() > 0){
+            microblog.setCImage(imageList);
+        }
+        microblog.setCContent(cContent);
         return microblogService.releaseWeiBo(user.getId(), microblog);
     }
 
     /**
      * 删除微博
-     * @param request 获取当前用户id
+     //* @param request 获取当前用户id
      * @param cId   微博id
      * @return R
      */
     @GetMapping("/delete")
     public R deleteMicroblog(HttpServletRequest request,
-                             @RequestParam("uid") Long uId,
                              @RequestParam("cid") Long cId){
         User user = (User) request.getAttribute("weiboUser");
-        return microblogService.deleteWeibo(uId, cId);
+        return microblogService.deleteWeibo(user.getId(), cId);
     }
+
+    /**
+     * 查询所有微博 (未登录)
+     * @return List
+     */
+    @PostMapping("/all")
+    public List<Weibo> findAllMicroblog(){
+        List<Weibo> weiboList = new ArrayList<>();
+        weiboList = microblogService.findAllWeibo(0L);
+        return weiboList;
+    }
+
+    /**
+     * 查询所有微博（已登录）
+     */
+    @PostMapping("/all-weibo")
+    @UserLoginAnnotation
+    public List<Weibo> findAllWeibo(HttpServletRequest request){
+        User user = (User) request.getAttribute("weiboUser");
+        List<Weibo> weiboList = new ArrayList<>();
+        weiboList = microblogService.findAllWeibo(user.getId());
+        return weiboList;
+    }
+
+    /**
+     * 根据微博id查询微博内容
+     * @param cId   微博id
+     * @return  R
+     */
+    @GetMapping("/find/{cId}")
+    public R findMicroblogById(@PathVariable Long cId){
+        return microblogService.findWeiboById(cId);
+    }
+
+    /**
+     * 查询所有发布了视频的微博
+     */
+    @PostMapping("/video-all")
+    public List<Weibo> findAllMicroblogVideo(){
+        return microblogService.findAllWeiboVideo();
+    }
+
+    /**
+     * 根据 id 的链表查询所有微博
+     */
+    @PostMapping("/in-db")
+    public List<Microblog> SearchInDbMicroblog(@RequestParam("needSearchCId") List<Long> needSearchCId){
+        return microblogService.SearchInDbMicroblog(needSearchCId);
+    }
+
+    /**
+     * 关键词查询微博
+     * @param keyword   关键词
+     * @return List
+     */
+    @PostMapping("/search-keyword")
+    public List<Microblog> selectByKeyword(@RequestParam("keyword") String keyword){
+        return null;
+    }
+
 
 }

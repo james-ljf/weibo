@@ -9,5 +9,7 @@ public interface LoginService {
 
     void loginOut(Long id);
 
+    R isWorkIpTrue(String account);
+
 
 }

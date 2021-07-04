@@ -11,9 +11,11 @@ import java.util.List;
 public interface FileClient {
 
     @PostMapping("/file/upload/image")
-    List<String> uploadImage(@RequestParam("files") MultipartFile[] files);
+    List<String> uploadImage(@RequestParam("files") List<MultipartFile> files);
 
     @PostMapping("/file/upload/one-file")
     String uploadOneFile(@RequestParam("file") MultipartFile file);
 
+    @PostMapping("/file/upload/video")
+    String uploadVideo(@RequestParam("file") MultipartFile file);
 }

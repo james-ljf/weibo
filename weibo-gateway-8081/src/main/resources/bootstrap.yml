@@ -3,24 +3,7 @@ server:
   port: 8081
 
 spring:
-  application:
-    name: weibo-gateway
   cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: false
-          # 开启大小写转换
-          lowerCaseServiceId: true
-      routes:
-        - id: email-server
-          uri: lb://email-service
-          predicates:
-            - Path=/email-service/**
-        - id: signup-service
-          uri: lb://signup-service
-          predicates:
-            - Path=/sign/**
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
@@ -32,4 +15,6 @@ spring:
         file-extension: yaml
         shared-configs:
           - data-id: weibo-common.yaml
+            group: WEIBO
+          - data-id: weibo-gateway.yaml
             group: WEIBO

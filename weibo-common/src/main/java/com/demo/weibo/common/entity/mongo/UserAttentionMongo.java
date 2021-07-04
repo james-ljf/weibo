@@ -1,5 +1,6 @@
 package com.demo.weibo.common.entity.mongo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,10 +16,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class UserAttentionMongo {
 
     @Id
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long u2Id;
 
     /**
      * 关注状态 0 未关注 、 1 单向关注  2互相关注
+     * 粉丝 ； 只有 1 状态
      */
     private Integer aCode;
 

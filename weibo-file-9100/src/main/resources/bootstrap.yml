@@ -2,16 +2,18 @@
 server:
   port: 9100
 
-fdfs:
-  so-timeout: 1500  #超时时间
-  connect-timeout: 600  #连接的超时时间
-  tracker-list: #服务配置地址ip与端口
-  #连接池
-  pool:
-    jmx-enabled: false
-  thumb-image:
-    height: 100
-    width: 100
+aliyun:
+  oss:
+    file:
+      endpoint: oss-cn-shenzhen.aliyuncs.com
+      keyid: LTAI5tHgqA6CBFvWCHTNxePq
+      keysecret: ulGp3ZwQ1iIw9W8UZtSINITadSltwN
+      bucketname: jiulang-weibo
+  vod:
+    file:
+      keyid: LTAI5tHgqA6CBFvWCHTNxePq
+      keysecret: ulGp3ZwQ1iIw9W8UZtSINITadSltwN
+
 spring:
   cloud:
     nacos:
@@ -27,7 +29,10 @@ spring:
             group: WEIBO
   servlet:
     multipart:
-      max-file-size: 200MB
-      max-request-size: 200MB
+      max-file-size: 1024MB
+      max-request-size: 1024MB
   application:
     name: file-service
+
+
+

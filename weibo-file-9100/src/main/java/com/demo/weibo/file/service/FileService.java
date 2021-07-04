@@ -6,9 +6,10 @@ import java.util.List;
 
 public interface FileService {
 
-    List<String> uploadImageFile(MultipartFile[] files);
+    List<String> uploadImageFile(List<MultipartFile> files);
 
     String uploadOneFile(MultipartFile file);
 
+    String uploadVideo(MultipartFile file);
 
 }

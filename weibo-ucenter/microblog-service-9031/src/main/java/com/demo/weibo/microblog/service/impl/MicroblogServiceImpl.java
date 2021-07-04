@@ -1,23 +1,19 @@
 package com.demo.weibo.microblog.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.demo.weibo.api.client.CommentClient;
+import com.demo.weibo.api.client.UserClient;
 import com.demo.weibo.common.entity.Microblog;
 import com.demo.weibo.common.entity.UserDetail;
-import com.demo.weibo.common.entity.MicroblogOperation;
-import com.demo.weibo.common.entity.mongo.MicroblogPojo;
-import com.demo.weibo.common.entity.mongo.UserAttentionMongo;
+import com.demo.weibo.common.entity.mongo.CommentMongo_1;
+import com.demo.weibo.common.entity.msg.Weibo;
+import com.demo.weibo.common.util.DateUtil;
 import com.demo.weibo.common.util.R;
 import com.demo.weibo.common.util.id.IdGenerator;
 import com.demo.weibo.microblog.mapper.MicroblogMapper;
-import com.demo.weibo.microblog.mapper.MicroblogRepository;
 import com.demo.weibo.microblog.service.MicroblogService;
 import com.demo.weibo.microblog.util.MicroblogComponent;
-import com.mongodb.client.result.UpdateResult;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,51 +22,288 @@ import java.util.*;
 
 
 @Service
-@Transactional
 public class MicroblogServiceImpl implements MicroblogService {
 
     @Autowired
     private MicroblogMapper microblogMapper;
 
     @Autowired
-    private MicroblogRepository microblogRepository;
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private CommentClient commentClient;
+
+    @Autowired
+    private UserClient userClient;
+
+    @Autowired
+    private MicroblogComponent microblogComponent;
 
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R releaseWeiBo(Long uId, Microblog microblog) {
         //雪花算法生成微博id
         microblog.setId(IdGenerator.snowflakeId()).setUId(uId).setCTime(new Date());
+
+        //添加到数据库
         int result = microblogMapper.insert(microblog);
-        //存进elasticsearch，方便搜索
-        System.out.println(microblogRepository.save(microblog));
+
+        //将微博存入缓存
+        redisTemplate.opsForValue().set("weibo:" + microblog.getId(), microblog);
+
+        //微博id存入缓存
+        redisTemplate.opsForList().leftPush("WeiboID:", microblog.getId());
+
         //更新缓存信息，用户发布的微博数加一
         UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + uId);
         if (userDetail != null){
+
             userDetail.setArticle(userDetail.getArticle() + 1);
             redisTemplate.opsForValue().set("UserDetail:" + uId, userDetail);
+
         }
-        return result > 0 ? R.ok("发布成功") : R.error("发布失败");
+
+
+        Weibo weibo = new Weibo();
+        assert userDetail != null;
+        weibo.setId(microblog.getId())
+                .setAvatar(userDetail.getAvatar())
+                .setNickname(userDetail.getNickname())
+                .setMicroblog(microblog)
+                .setTime(DateUtil.dateTime(microblog.getCTime()))
+                .setCode(0)
+                .setAttention(0)
+                .setHot(microblog.getCHeat());
+
+        //返回微博和用户信息
+        return result > 0 ? R.ok("发布成功").addData("weibo", weibo) : R.error("发布失败");
     }
 
     @Override
+    @Transactional
     public R deleteWeibo(Long uId, Long cId) {
+
+        //删除数据库的微博
         int result = microblogMapper.deleteById(cId);
-        //删除在es引擎的微博
-        microblogRepository.deleteById(cId);
+
+        //删除缓存的微博
+        redisTemplate.delete("weibo:" + cId);
+
+        //删除缓存微博的id
+        redisTemplate.opsForList().remove("WeiboID:", 0, cId);
+
         //更新缓存信息，用户发布的微博数减一
         UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + uId);
         if (userDetail != null){
             userDetail.setArticle(userDetail.getArticle() - 1);
             redisTemplate.opsForValue().set("UserDetail:" + uId, userDetail);
         }
+
         return result > 0 ? R.ok("删除成功") : R.error("删除失败");
     }
 
+    @Override
+    public List<Weibo> findAllWeibo(Long uId) {
 
+        //缓存中获取所有微博id
+        List<Object> weiboId = redisTemplate.opsForList().range("WeiboID:", 0, -1);
+
+        //存放微博的数组
+        List<Microblog> microblogList = new ArrayList<>();
+
+
+        if (weiboId == null){
+            //如果缓存中没有微博id，则去数据库找
+            microblogList =  microblogMapper.selectList(null);
+            if (microblogList == null){
+                return null;
+            }
+
+        }else{
+
+            //遍历微博id去缓存获取微博详细信息，并存到数组里
+            for (Object o : weiboId) {
+                Microblog microblog = (Microblog) redisTemplate.opsForValue().get("weibo:" + o);
+                microblogList.add(microblog);
+            }
+
+        }
+
+
+
+        //存放数据,前端显示
+        List<Weibo> weiboList = new ArrayList<>();
+
+
+        List<JSONObject> objectList = new ArrayList<>();
+
+        //用户已登录
+        if (uId != 0){
+            //查询用户的所有关注
+            objectList = userClient.findAllMyAttention(uId);
+            System.out.println("关注数组：" + objectList);
+        }
+
+        //遍历查询出来的微博
+        for (Microblog microblog : microblogList) {
+            Weibo weibo = new Weibo();
+
+            //从缓存获取当前用户的信息
+            UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + microblog.getUId());
+
+            if (uId != 0){
+
+                //查询mongodb微博的点赞数组是否有当前登录用户
+                JSONObject object = microblogComponent.selectList(microblog.getId(), uId, "likeList");
+
+                //如果存在，则当前用户已点赞该微博
+                if (object != null){
+                    weibo.setCode(1);
+                }
+
+                //查看当前微博是不是自己发布的
+                if (!uId.equals(microblog.getUId())){
+
+                    //对该用户的关注状态先置0，也就是没有关注，然后再去遍历看是否有关注
+                    weibo.setAttention(0);
+
+                    //遍历自己的关注数组是否关注了该用户
+                    if (objectList != null && objectList.size() > 0){
+                        for (JSONObject jsonObject : objectList) {
+
+                            //如果自己关注了该用户
+                            if (jsonObject.get("_id").equals(microblog.getUId())){
+                                weibo.setAttention(1);
+                            }
+                        }
+                    }
+
+                }
+            }
+
+
+            //设置weibo实体参数
+            assert userDetail != null;
+            weibo.setId(microblog.getId())
+                    .setNickname(userDetail.getNickname())
+                    .setVip(userDetail.getVip())
+                    .setMicroblog(microblog)
+                    .setTime(DateUtil.dateTimeMM(microblog.getCTime()))
+                    .setHot(microblog.getCHeat());
+            if (userDetail.getAvatar() != null){
+                weibo.setAvatar(userDetail.getAvatar());
+            }
+            // 添加到数组里
+            weiboList.add(weibo);
+        }
+
+        //按照微博热度排序
+        weiboList.sort(Comparator.comparing(Weibo::getHot).reversed());
+
+        return weiboList;
+    }
+
+    @Override
+    public R findWeiboById(Long cId) {
+        Microblog microblog = (Microblog) redisTemplate.opsForValue().get("weibo:" + cId);
+
+        //从缓存获取用户信息
+        assert microblog != null;
+        UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + microblog.getUId());
+        Weibo weibo = new Weibo();
+
+        assert userDetail != null;
+        weibo.setId(microblog.getId()).setMicroblog(microblog)
+                .setNickname(userDetail.getNickname())
+                .setVip(userDetail.getVip())
+                .setAvatar(userDetail.getAvatar())
+                .setTime(DateUtil.dateTimeMM(microblog.getCTime()))
+                .setHot(microblog.getCHeat());
+
+        //获取评论(按时间排序)
+        List<CommentMongo_1> list = commentClient.selectAllComment(microblog.getId(), 0);
+
+        //微博热度+100
+        microblog.setCHeat(microblog.getCHeat() + 100);
+
+        //更新到缓存
+        redisTemplate.opsForValue().set("weibo:" + microblog.getId(), microblog);
+
+        return R.ok("查询成功").addData("weibo", weibo).addData("commentList", list);
+    }
+
+    @Override
+    public List<Weibo> findAllWeiboVideo() {
+        //缓存中获取所有微博id
+        List<Object> weiboId = null;
+        weiboId = redisTemplate.opsForList().range("WeiboID:", 0, -1);
+
+        //存放微博的数组
+        List<Microblog> microblogList = new ArrayList<>();
+
+
+        if (weiboId == null){
+            //如果缓存中没有微博id，则去数据库找
+            microblogList =  microblogMapper.selectList(null);
+            if (microblogList == null){
+                return null;
+            }
+
+        }else{
+
+            //遍历微博id去缓存获取微博详细信息，并存到数组里
+            for (Object o : weiboId) {
+                Microblog microblog = (Microblog) redisTemplate.opsForValue().get("weibo:" + o);
+                microblogList.add(microblog);
+            }
+
+        }
+
+        //如果没有人发布视频
+        if (microblogList.size() < 1){
+            return null;
+        }
+
+        //存放数据,前端显示
+        List<Weibo> weiboList = new ArrayList<>();
+
+        Weibo weibo= null;
+        UserDetail userDetail = null;
+
+        //遍历数据库查出来的数组
+        for (Microblog microblog : microblogList) {
+            if (microblog.getCVideo() != null){
+
+                weibo = new Weibo();
+                //从缓存获取当前用户的信息
+                userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + microblog.getUId());
+
+                //设置weibo实体参数
+                assert userDetail != null;
+                weibo.setId(microblog.getId())
+                        .setAvatar(userDetail.getAvatar())
+                        .setNickname(userDetail.getNickname())
+                        .setVip(userDetail.getVip())
+                        .setMicroblog(microblog)
+                        .setTime(DateUtil.dateTimeMM(microblog.getCTime()))
+                        .setHot(microblog.getCHeat());
+                // 添加到数组里
+                weiboList.add(weibo);
+            }
+        }
+        return weiboList;
+    }
+
+    @Override
+    public List<Microblog> SearchInDbMicroblog(List<Long> needSearchCId) {
+        return microblogMapper.selectBatchIds(needSearchCId);
+    }
+
+    @Override
+    public List<Microblog> selectByKeyword(String keyword) {
+        return microblogMapper.selectByKeyword(keyword);
+    }
 
 
 }

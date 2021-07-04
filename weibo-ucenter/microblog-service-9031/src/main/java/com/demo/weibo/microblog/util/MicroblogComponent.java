@@ -29,11 +29,12 @@ public class MicroblogComponent {
 
     /**
      * 查询mongodb集合内嵌数组中的某个对象
-     * @param id1
-     * @param id2
-     * @return
+     * @param id1   集合id
+     * @param id2 内嵌对象id
+     * @param list 要查询的内嵌数组名
+     * @return JSONObject
      */
-    public JSONObject selectList(Long id1, Long id2){
+    public JSONObject selectList(Long id1, Long id2, String list){
         //存放返回的json对象
         JSONObject a = null;
         //封装对象列表查询条件
@@ -42,14 +43,14 @@ public class MicroblogComponent {
         MatchOperation match = Aggregation.match(Criteria.where("_id").is(id1));
         commonOperations.add(match);
         //2. 指定投影，返回哪些字段
-        ProjectionOperation project = Aggregation.project("likeList");
+        ProjectionOperation project = Aggregation.project(list);
         commonOperations.add(project);
         //3. 拆分内嵌文档
-        UnwindOperation unwind = Aggregation.unwind("likeList");
+        UnwindOperation unwind = Aggregation.unwind(list);
         commonOperations.add(unwind);
         //4. 指定查询子文档
         MatchOperation match2 = Aggregation.match(
-                Criteria.where("likeList._id").is(id2));
+                Criteria.where(list + "._id").is(id2));
         commonOperations.add(match2);
 
         //创建管道查询对象
@@ -59,7 +60,7 @@ public class MicroblogComponent {
         List<JSONObject> mappedResults = reminds.getMappedResults();
         if (mappedResults.size() > 0) {
             //获取attentionList数组的一个对象
-            a  = JSONObject.parseObject(mappedResults.get(0).getJSONObject("likeList").toJSONString());
+            a  = JSONObject.parseObject(mappedResults.get(0).getJSONObject(list).toJSONString());
         }
         return a;
     }

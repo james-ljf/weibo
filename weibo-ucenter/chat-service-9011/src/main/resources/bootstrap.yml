@@ -1,0 +1,24 @@
+#chat-service port from 9011 to 9020
+server:
+  port: 9011
+
+spring:
+  data:
+    mongodb:
+      database: weibo
+      port: 27017
+      host: 127.0.0.1
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        group: WEIBO
+      config:
+        server-addr: 127.0.0.1:8848
+        namespace: public
+        file-extension: yaml
+        shared-configs:
+          - data-id: weibo-common.yaml
+            group: WEIBO
+  application:
+    name: chat-service

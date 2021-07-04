@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 用户信息操作
@@ -23,8 +24,8 @@ public class UserInfoController {
 
     /**
      * 添加email
-     * @param userDetail
-     * @return
+     * @param userDetail    用户信息
+     * @return  Object
      */
     @PostMapping("/add-info")
     public Object addUserInfo(@RequestBody UserDetail userDetail){
@@ -38,8 +39,8 @@ public class UserInfoController {
 
     /**
      * 查询email是否存在
-     * @param email
-     * @return
+     * @param email 邮箱
+     * @return  UserDetail
      */
     @GetMapping("/select-email")
     public UserDetail selectUserEmail(@RequestParam("email") String email){
@@ -69,7 +70,16 @@ public class UserInfoController {
     }
 
     /**
-     * 根据用户id更新用户信息
+     * 查询所有用户信息初始化到缓存
+     * @return  List
+     */
+    @PostMapping("/all")
+    public List<UserDetail> selectAll(){
+        return userInfoService.selectAll();
+    }
+
+    /**
+     * 更新用户信息
      * @param request 获取用户id
      * @param userDetail 要修改的信息
      * @return r
@@ -83,15 +93,18 @@ public class UserInfoController {
     }
 
     /**
-     * 上传头像
+     * 添加头像
      * @param request 获取用户id
-     * @param file  头像文件
      * @return r
      */
-    //@UserLoginAnnotation
+
     @GetMapping("/add-avatar")
-    public R uploadUserAvatar(HttpServletRequest request, MultipartFile file){
+    @UserLoginAnnotation
+    public R uploadUserAvatar(HttpServletRequest request, @RequestParam("avatar") String avatar){
         User user = (User) request.getAttribute("weiboUser");
-        return userInfoService.uploadUserAvatar(user.getId(), file);
+        if(user == null){
+            return R.error("请先登录");
+        }
+        return userInfoService.uploadUserAvatar(user.getId(), avatar);
     }
 }

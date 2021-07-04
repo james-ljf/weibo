@@ -1,5 +1,6 @@
 package com.demo.weibo.user.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.demo.weibo.common.annotation.UserLoginAnnotation;
 import com.demo.weibo.common.entity.User;
 import com.demo.weibo.common.entity.mq.Attention;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 用户关注操作
@@ -44,11 +46,14 @@ public class UserAttentionController {
     public R addUserAttention(HttpServletRequest request,
                               @RequestParam("u2id") Long u2Id,
                               @RequestParam("strategy") String strategy){
+
         User user = (User) request.getAttribute("weiboUser");
+
         //生产者提交给消费者的信息实体类
         Attention a = new Attention(user.getId(), u2Id, strategy);
         //将消息提交到消息队列
         attentionBinding.setAttention().send(MessageBuilder.withPayload(a).build());
+
         return R.ok("关注成功");
     }
 
@@ -65,17 +70,17 @@ public class UserAttentionController {
                                  @RequestParam("u2id") Long u2Id,
                                  @RequestParam("strategy") String strategy){
         User user = (User) request.getAttribute("weiboUser");
+
         //生产者提交给消费者的信息实体类
         Attention a = new Attention(user.getId(), u2Id, strategy);
         //将消息提交到消息队列
         attentionBinding.setAttention().send(MessageBuilder.withPayload(a).build());
 
-
         return R.ok("取消关注成功");
     }
 
     /**
-     * 查询自己的所有关注
+     * 查询自己的所有关注(直接访问接口)
      * @param request 获取用户id
      * @return R
      */
@@ -87,13 +92,53 @@ public class UserAttentionController {
     }
 
     /**
-     * 查询某个用户的所有关注
+     * 查询自己的所有关注(供服务调用查询)
+     * @param uId  自己的id
+     * @return  List
+     */
+    @GetMapping("/myself-attention")
+    public List<JSONObject> findAllMyAttention(@RequestParam("uId") Long uId){
+        return attentionService.findAllMyAttention(uId);
+    }
+
+    /**
+     * 查询自己或者某个用户的所有关注
      * @param uId 用户id
      * @return R
      */
-    @GetMapping("/all/{uId}")
-    public R findOneUserAttention(@PathVariable Long uId){
-        return attentionService.findAllUserAttention(uId);
+    @GetMapping("/all-attention")
+    @UserLoginAnnotation
+    public R findOneUserAttention(HttpServletRequest request, @RequestParam("uId") Long uId){
+        User user = (User) request.getAttribute("weiboUser");
+        if (user == null){
+            return attentionService.findAllUserAttention(uId);
+        }
+        return attentionService.findAllUserAttention(user.getId());
+    }
+
+
+    /**
+     * 查询当前用户的好友列表（即互相关注的人）
+     * @param request   获取当前用户
+     * @return  R
+     */
+    @GetMapping("/friend")
+    @UserLoginAnnotation
+    public R findUserAllFriend(HttpServletRequest request){
+        User user = (User) request.getAttribute("weiboUser");
+        return attentionService.findAllUserFriend(user.getId());
+    }
+
+    /**
+     * 查询当前用户的所有粉丝
+     * @param request   获取当前用户
+     * @return  R
+     */
+    @GetMapping("/all-fans")
+    @UserLoginAnnotation
+    public R findMyAllFans(HttpServletRequest request){
+        User user = (User) request.getAttribute("weiboUser");
+        return attentionService.findAllUserFans(user.getId());
     }
 
 }

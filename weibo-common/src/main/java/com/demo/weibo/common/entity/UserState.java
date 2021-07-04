@@ -1,6 +1,7 @@
 package com.demo.weibo.common.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -11,14 +12,10 @@ import java.util.Date;
 public class UserState {
 
     /**
-     * id
-     */
-    @TableId
-    private Integer id;
-
-    /**
      * 用户id
      */
+    @TableId
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long uId;
 
     /**
