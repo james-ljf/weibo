@@ -12,6 +12,6 @@ public interface CommentService {
 
     R removeComment(Map<String, Object> params);
 
-    List<CommentMongo_1> selectAllComment(Long cId, Integer strategy);
+    R selectAllComment(Long cId, Integer strategy);
 
 }

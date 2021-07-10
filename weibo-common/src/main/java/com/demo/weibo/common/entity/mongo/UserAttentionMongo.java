@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
 @Accessors(chain = true)
@@ -23,6 +24,7 @@ public class UserAttentionMongo {
      * 关注状态 0 未关注 、 1 单向关注  2互相关注
      * 粉丝 ； 只有 1 状态
      */
-    private Integer aCode;
+    @Field(value = "code")
+    private String code;
 
 }

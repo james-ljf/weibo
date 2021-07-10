@@ -30,7 +30,7 @@ public class CommentController {
      * @param param 评论的信息
      * @return  R
      */
-    @GetMapping("/add")
+    @PostMapping("/add")
     @UserLoginAnnotation
     public R addComment(HttpServletRequest request, @RequestBody Map<String, Object> param){
         User user = (User) request.getAttribute("weiboUser");
@@ -51,12 +51,13 @@ public class CommentController {
 
     /**
      * 查询当前微博所有评论
-     * @param cId
-     * @return
+     * @param cId   微博id
+     * @return  List
      */
     @GetMapping("/all")
-    public List<CommentMongo_1> selectAllComment( @RequestParam("cid") Long cId, Integer strategy){
+    public R selectAllComment( @RequestParam("cid") Long cId,@RequestParam("strategy") Integer strategy){
         return commentService.selectAllComment(cId, strategy);
     }
+
 
 }

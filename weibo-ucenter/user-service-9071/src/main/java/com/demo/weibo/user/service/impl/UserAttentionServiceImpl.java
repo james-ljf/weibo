@@ -6,6 +6,7 @@ import com.demo.weibo.common.entity.UserAttention;
 import com.demo.weibo.common.entity.UserDetail;
 import com.demo.weibo.common.entity.mongo.UserAttentionMongo;
 import com.demo.weibo.common.entity.msg.FriendList;
+import com.demo.weibo.common.entity.msg.U2;
 import com.demo.weibo.common.util.R;
 import com.demo.weibo.user.mapper.UserDetailMapper;
 import com.demo.weibo.user.service.UserAttentionService;
@@ -55,7 +56,6 @@ public class UserAttentionServiceImpl implements UserAttentionService {
      *             \selectUserAttentionU2 => 被关注用户在mongodb中的集合实体（也就是从mongodb中查出来的）
      */
     @Override
-    @Transactional
     public R addUserAttention(UserAttention userAttention) {
 
         //查询当前用户的集合
@@ -77,30 +77,31 @@ public class UserAttentionServiceImpl implements UserAttentionService {
         if (jsonObject == null){ // 被关注用户没有关注当前用户
 
             //设置关注状态为1，即单向关注
-            userAttentionMongo.setACode(1);
+            userAttentionMongo.setCode("1");
             list.set(0, userAttentionMongo);
 
         }else {
 
             //设置关注状态为2，即互相关注
-            userAttentionMongo.setACode(2);
+            userAttentionMongo.setCode("2");
             list.set(0, userAttentionMongo);
 
             //更新被关注的用户对当前用户的关注状态为2(互相关注)
             Query query = Query.query(Criteria.where("_id")
                     .is(userAttentionMongo.getU2Id())
             .and("attentionList._id").is(userAttention.getU1Id()));
-            Update update = Update.update("attentionList.$.aCode", 2);
+            Update update = Update.update("attentionList.$.aCode", "2");
             mongoTemplate.updateFirst(query, update, UserAttentionMongo.class);
 
         }
 
         //将数组对象存入UserAttention对象中
-        userAttention.setAttentionList(list);
+        userAttention.setAttentionList(new ArrayList<>());
 
         //从redis缓存获取当前用户的所有信息
         UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + userAttention.getU1Id());
 
+        //如果当前用户不存在缓存
         if (userDetail == null){
 
             //缓存没有，查数据库
@@ -118,12 +119,14 @@ public class UserAttentionServiceImpl implements UserAttentionService {
         boolean res = attentionMongoComponent.addAttentionMessage(userAttention.getU1Id(), userAttentionMongo.getU2Id());
 
         //获取当前用户关注的人数并更新
-        userDetail.setAttention(userDetail.getAttention()+1);
+        int a = userDetail.getAttention();
+        userDetail.setAttention(a+1);
 
         //获取被关注用户的信息并更新粉丝数量
         UserDetail userDetail_2 = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + userAttentionMongo.getU2Id());
         assert userDetail_2 != null;
-        userDetail_2.setFans(userDetail_2.getFans()+1);
+        int b = userDetail_2.getFans();
+        userDetail_2.setFans(b+1);
 
         //查询并判断被关注的用户是否创建了集合
         ////新建被关注用户的对象
@@ -131,12 +134,13 @@ public class UserAttentionServiceImpl implements UserAttentionService {
         userAttentionU2.setU1Id(userAttentionMongo.getU2Id());
 
         ////使用工具类获取是否创建了集合
-        UserAttention selectUserAttentionU2 = attentionMongoComponent.selectUserAttention(userAttention);
+        UserAttention selectUserAttentionU2 = attentionMongoComponent.selectUserAttention(userAttentionU2);
 
         ////设置粉丝对象数组
         UserAttentionMongo userFansMongo = new UserAttentionMongo();
-        userFansMongo.setU2Id(userAttention.getU1Id()).setACode(1);
+        userFansMongo.setU2Id(userAttention.getU1Id()).setCode("1");
         List<UserAttentionMongo> fansList = new ArrayList<>();
+
 
         ////判断是否为空
         if (selectUserAttentionU2 == null){
@@ -148,6 +152,12 @@ public class UserAttentionServiceImpl implements UserAttentionService {
 
             ////在mongodb创建被关注的用户的集合
             mongoTemplate.save(selectUserAttentionU2);
+
+            //插入到内嵌对象数组里
+            Query query = Query.query(Criteria.where("_id").is(selectUserAttentionU2.getU1Id()));
+            Update update = new Update();
+            update.addToSet("fansList", userFansMongo);
+            mongoTemplate.upsert(query, update, UserAttentionMongo.class);
 
         }else{
 
@@ -175,6 +185,11 @@ public class UserAttentionServiceImpl implements UserAttentionService {
             redisTemplate.opsForValue().set("UserDetail:" + userDetail_2.getUId(), userDetail_2);
             redisTemplate.opsForValue().set("UserDetail:" + userDetail.getUId(), userDetail);
 
+            //添加被关注用户到当前用户集合的attentionlist对象数组中
+            Query query = Query.query(Criteria.where("_id").is(userAttention.getU1Id()));
+            Update update = new Update();
+            update.addToSet("attentionList", userAttentionMongo);
+            mongoTemplate.upsert(query, update, UserAttentionMongo.class);
             return R.ok("关注成功");
 
         }
@@ -185,11 +200,9 @@ public class UserAttentionServiceImpl implements UserAttentionService {
         update.addToSet("attentionList", userAttentionMongo);
         UpdateResult result = mongoTemplate.upsert(query, update, UserAttentionMongo.class);
 
-        //该用户的集合已经创建
         //重新将两个用户信息更新到缓存
         redisTemplate.opsForValue().set("UserDetail:" + userDetail_2.getUId(), userDetail_2);
         redisTemplate.opsForValue().set("UserDetail:" + userDetail.getUId(), userDetail);
-
 
         return R.ok("关注成功");
     }
@@ -198,7 +211,6 @@ public class UserAttentionServiceImpl implements UserAttentionService {
      * 取消关注
      */
     @Override
-    @Transactional
     public R cancelUserAttention(UserAttention userAttention) {
         //查询该用户的集合是否已经创建
         UserAttention attention = attentionMongoComponent.selectUserAttention(userAttention);
@@ -226,13 +238,15 @@ public class UserAttentionServiceImpl implements UserAttentionService {
             UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + userAttention.getU1Id());
             //获取当前用户关注的人数并更新
             assert userDetail != null;
-            userDetail.setAttention(userDetail.getAttention()-1);
+            int a = userDetail.getAttention();
+            userDetail.setAttention(a-1);
 
             //从redis获取被取消关注用户的所有信息
             UserDetail userDetail_2 = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + userAttentionMongo.getU2Id());
             //获取被取消关注用户粉丝人数并更新
             assert userDetail_2 != null;
-            userDetail_2.setFans(userDetail_2.getFans()-1);
+            int b = userDetail_2.getFans();
+            userDetail_2.setFans(b-1);
 
             //重新存进缓存
             redisTemplate.opsForValue().set("UserDetail:" + userDetail.getUId(), userDetail);
@@ -258,7 +272,7 @@ public class UserAttentionServiceImpl implements UserAttentionService {
 
                 //设置被关注用户对当前用户的关注状态为1，即单向关注
                 update = new Update();
-                update.set("attentionList.$.aCode", 1);
+                update.set("attentionList.$.aCode", "1");
                 query = new Query(Criteria.where("_id").is(userAttentionMongo.getU2Id())
                         .and("attentionList._id").is(userAttention.getU1Id()));
                 mongoTemplate.updateFirst(query, update, UserAttentionMongo.class);
@@ -274,7 +288,7 @@ public class UserAttentionServiceImpl implements UserAttentionService {
     @Override
     public R findAllUserAttention(Long uId) {
         //获取当前用户关注数组
-        List<JSONObject> attentionList = attentionMongoComponent.selectAttentionList(uId);
+        List<UserAttentionMongo> attentionList = attentionMongoComponent.selectAttentionList(uId);
 
         //存放关注用户的信息
         List<UserDetail> userDetailList = new ArrayList<>();
@@ -283,14 +297,14 @@ public class UserAttentionServiceImpl implements UserAttentionService {
         if (attentionList != null && attentionList.size() > 0){
 
             //遍历
-            for (JSONObject object : attentionList) {
+            for (UserAttentionMongo object : attentionList) {
 
                 //从redis获取用户信息
-                UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + object.get("u2Id"));
+                UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + object.getU2Id());
                 if (userDetail == null){
 
                     //缓存没有，查数据库
-                    Long userId = (Long) object.get("u2Id");
+                    Long userId = object.getU2Id();
                     userDetailMapper.selectById(userId);
 
                 }
@@ -307,10 +321,11 @@ public class UserAttentionServiceImpl implements UserAttentionService {
     }
 
     @Override
-    public List<JSONObject> findAllMyAttention(Long uId) {
+    public List<UserAttentionMongo> findAllMyAttention(Long uId) {
 
         //获取当前用户关注数组
-        List<JSONObject> attentionList = attentionMongoComponent.selectAttentionList(uId);
+        List<UserAttentionMongo> attentionList = attentionMongoComponent.selectAttentionList(uId);
+        System.out.println(attentionList);
         if (attentionList != null && attentionList.size() > 0){
 
             return attentionList;
@@ -320,7 +335,7 @@ public class UserAttentionServiceImpl implements UserAttentionService {
 
     @Override
     public R findAllUserFriend(Long uId) {
-        List<JSONObject> friendList = attentionMongoComponent.selectFriendList(uId);
+        List<UserAttentionMongo> friendList = attentionMongoComponent.selectFriendList(uId);
         System.out.println("好友列表" + friendList);
         //判断是否为空
         if (friendList.isEmpty()){
@@ -330,9 +345,9 @@ public class UserAttentionServiceImpl implements UserAttentionService {
         List<FriendList> mapList = new ArrayList<>();
 
         //遍历好友列表，从缓存获取每个好友的昵称,然后以FriendList对象形式存到list数组里
-        for (JSONObject jsonObject : friendList) {
+        for (UserAttentionMongo jsonObject : friendList) {
 
-            UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + jsonObject.get("_id"));
+            UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + jsonObject.getU2Id());
             assert userDetail != null;
             FriendList uFriendList = new FriendList();
             uFriendList.setUId(userDetail.getUId());
@@ -349,7 +364,7 @@ public class UserAttentionServiceImpl implements UserAttentionService {
     public R findAllUserFans(Long uId) {
 
         //获取用户粉丝列表
-        List<JSONObject> fansList = attentionMongoComponent.selectFansList(uId);
+        List<UserAttentionMongo> fansList = attentionMongoComponent.selectFansList(uId);
 
         //存放用户信息
         List<UserDetail> userDetailList = null;
@@ -360,14 +375,14 @@ public class UserAttentionServiceImpl implements UserAttentionService {
             userDetailList = new ArrayList<>();
 
             //遍历
-            for (JSONObject object : fansList) {
+            for (UserAttentionMongo object : fansList) {
 
                 //从redis获取用户信息
-                UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + object.get("u2Id"));
+                UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + object.getU2Id());
                 if (userDetail == null){
 
                     //缓存没有，查数据库
-                    Long userId = (Long) object.get("u2Id");
+                    Long userId = object.getU2Id();
                     userDetailMapper.selectById(userId);
 
                 }

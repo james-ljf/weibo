@@ -2,6 +2,7 @@ package com.demo.weibo.comment.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.demo.weibo.api.client.MicroblogClient;
 import com.demo.weibo.comment.service.CommentService;
 import com.demo.weibo.comment.util.CommentComponent;
 import com.demo.weibo.common.entity.Microblog;
@@ -35,11 +36,13 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     private CommentComponent commentComponent;
 
+    @Autowired
+    private MicroblogClient microblogClient;
+
     @Override
-    @Transactional
     public R addComment(Map<String, Object> params) {
         //查询微博是否存在
-        Long cId = (Long) params.get("cId");
+        long cId = Long.parseLong((String) params.get("cId"));
         Microblog microblog = (Microblog) redisTemplate.opsForValue().get("weibo:" + cId);
         if (microblog == null){
             return R.error("出错了，该微博不存在");
@@ -65,10 +68,14 @@ public class CommentServiceImpl implements CommentService {
         if (microblogComment == null){
             //如果该微博没有评论，则新建该微博的评论集合
             microblogComment = new MicroblogComment();
-            List<CommentMongo_1> list = new ArrayList<>();
-            list.add(commentMongo_1);
-            microblogComment.setCId(cId).setCommentList(list);
+            microblogComment.setCId(cId);
             mongoTemplate.save(microblogComment);
+
+            //插入评论信息到评论列表里
+            Query query = Query.query(Criteria.where("_id").is(microblogComment.getCId()));
+            Update update = new Update();
+            update.addToSet("commentList", commentMongo_1);
+            mongoTemplate.upsert(query, update, CommentMongo_1.class);
 
         }else{
 
@@ -83,6 +90,9 @@ public class CommentServiceImpl implements CommentService {
         microblog.setCComment(microblog.getCComment()+1);
         redisTemplate.opsForValue().set("weibo:" + microblog.getId(), microblog);
 
+        //更新到数据库
+        microblogClient.updateWeiboInfo(microblog);
+
         //将用户评论微博的消息存到mongo消息集合
         boolean res = commentComponent.addCommentMessage(microblog.getUId(), commentMongo_1.getUId());
         if (!res){
@@ -90,7 +100,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         //携带新的评论返回渲染前端
-        return R.ok("评论成功").addData("commentOne", commentMongo_1);
+        return R.ok("评论成功").addData("commentOne", commentMongo_1).addData("cId", cId);
     }
 
     @Override
@@ -129,27 +139,47 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentMongo_1> selectAllComment(Long cId, Integer strategy) {
+    public R selectAllComment(Long cId, Integer strategy) {
         List<CommentMongo_1> objectList = commentComponent.selectCommentList(cId);
-        if (objectList == null){
-            return null;
+        if (objectList.size() == 0){
+            return R.error("没有评论");
         }
 
-        //判断排序策略
+//        //判断排序策略
+//        if (strategy == 0){
+//            //按照评论时间排序
+//            objectList.sort(Comparator.comparing(CommentMongo_1::getDate).reversed());
+//        }else {
+//            //按照评论热度(点赞数)排序
+//            objectList.sort(new Comparator<CommentMongo_1>() {
+//                @Override
+//                public int compare(CommentMongo_1 o1, CommentMongo_1 o2) {
+//                    return o2.getLikeList().size() - o1.getLikeList().size();
+//                }
+//            });
+//        }
+        objectList.sort(Comparator.comparing(CommentMongo_1::getDate).reversed());
+
+        List<CommentMongo_1> newObjectList = new ArrayList<>();
         if (strategy == 0){
-            //按照评论时间排序
-            objectList.sort(Comparator.comparing(CommentMongo_1::getDate).reversed());
-        }else {
-            //按照评论热度(点赞数)排序
-            objectList.sort(new Comparator<CommentMongo_1>() {
-                @Override
-                public int compare(CommentMongo_1 o1, CommentMongo_1 o2) {
-                    return o2.getLikeList().size() - o1.getLikeList().size();
+            //如果评论超过三条，就只要时间最新的三条
+            if (objectList.size() > 3){
+                //只返回三条数据到前端
+                for (int i = 0; i < 3; i++) {
+                    newObjectList.add(objectList.get(i));
                 }
-            });
+                //如果评论少于三条，则全部返回
+            }else{
+                return R.ok("查询到少于三条").addData("commentList",objectList);
+            }
+        }else if (strategy == 1){
+            //返回全部评论到前端
+            return  R.ok("查询所有评论成功").addData("commentList",objectList);
         }
-
-        return objectList;
+        if (newObjectList.size() == 0){
+            return R.error("没有评论");
+        }
+        return R.ok("查询三条评论成功").addData("commentList",newObjectList);
     }
 
     //测试重写比较器Comparator的compare方法排序

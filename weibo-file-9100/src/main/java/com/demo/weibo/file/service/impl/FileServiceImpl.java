@@ -32,7 +32,7 @@ public class FileServiceImpl implements FileService {
     private InputStream inputStream;
 
     @Override
-    public List<String> uploadImageFile(List<MultipartFile> files) {
+    public List<String> uploadImageFile(MultipartFile[] files) {
         //局部静态常量
         String endpoint = ConstantPropertiesUtils.END_POINT;
 
@@ -46,12 +46,12 @@ public class FileServiceImpl implements FileService {
         try {
             // 创建OSS实例。
             OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
-            for (MultipartFile file : files) {
+            for (int i = 0; i < files.length; i++) {
                 //获取上传文件输入流
-                inputStream = file.getInputStream();
+                inputStream = files[i].getInputStream();
                 //获取文件名称
                 String fileName = null;
-                fileName = file.getOriginalFilename();
+                fileName = files[i].getOriginalFilename();
 
                 //文件名加入唯一uuid
                 String uuid = IdGenerator.simpleUUID();
@@ -77,6 +77,7 @@ public class FileServiceImpl implements FileService {
             //文件全部上传完成,关闭OSSClient。
             ossClient.shutdown();
             //返回文件路径数组
+            System.out.println(fileList);
             return fileList;
         } catch (Exception e) {
             e.printStackTrace();

@@ -3,6 +3,8 @@ package com.demo.weibo.user.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.demo.weibo.common.annotation.UserLoginAnnotation;
 import com.demo.weibo.common.entity.User;
+import com.demo.weibo.common.entity.UserAttention;
+import com.demo.weibo.common.entity.mongo.UserAttentionMongo;
 import com.demo.weibo.common.entity.mq.Attention;
 import com.demo.weibo.common.util.R;
 import com.demo.weibo.user.binding.AttentionBinding;
@@ -97,7 +99,7 @@ public class UserAttentionController {
      * @return  List
      */
     @GetMapping("/myself-attention")
-    public List<JSONObject> findAllMyAttention(@RequestParam("uId") Long uId){
+    public List<UserAttentionMongo> findAllMyAttention(@RequestParam("uId") Long uId){
         return attentionService.findAllMyAttention(uId);
     }
 

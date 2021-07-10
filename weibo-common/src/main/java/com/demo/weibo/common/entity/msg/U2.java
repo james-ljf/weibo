@@ -29,6 +29,11 @@ public class U2 {
     private String content;
 
     /**
+     * 消息时间
+     */
+    private String date;
+
+    /**
      * 消息状态  0未读  1已读
      */
     private Integer code;

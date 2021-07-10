@@ -8,10 +8,6 @@ spring:
       database: weibo
       port: 27017
       host: 127.0.0.1
-  servlet:
-    multipart:
-      max-file-size: 500MB
-      max-request-size: 500MB
   cloud:
     nacos:
       discovery:
@@ -24,5 +20,18 @@ spring:
         shared-configs:
           - data-id: weibo-common.yaml
             group: WEIBO
+    stream:
+      rocketmq:
+        binder:
+          name-server: 192.168.1.106:9876
+          enable-msg-trace: true
+      bindings:
+        getLike:
+          destination: microblog
+          group: MICROBLOGMQ
+          content-type: application/json
+        setLike:
+          destination: microblog
+          content-type: application/json
   application:
     name: microblog-service

@@ -110,7 +110,7 @@ public class LoginServiceImpl implements LoginService {
         //查询用户登录信息数据库获取上一次登录的设备和ip
         UserState userState = userStateMapper.selectById(user.getId());
         //如果ip或者设备相等
-        if (IpUtils.getHostIp().equals(userState.getIp()) || IpUtils.getHostName().equals(userState.getHostName())){
+        if (IpUtils.getHostIp().equals(userState.getIp()) && IpUtils.getHostName().equals(userState.getHostName())){
             return R.ok("安全");
         }
         return R.error("需要安全验证");

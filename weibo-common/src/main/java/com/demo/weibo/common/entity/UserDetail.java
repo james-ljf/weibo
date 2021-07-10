@@ -1,5 +1,7 @@
 package com.demo.weibo.common.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -57,16 +59,19 @@ public class UserDetail {
     /**
      * 用户的省份
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String province;
 
     /**
      * 用户的城市
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String city;
 
     /**
      * 用户的区
      */
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private String area;
 
     /**

@@ -67,10 +67,11 @@ public class CommentComponent {
         return a;
     }
 
+
     /**
      * 返回mongodb内嵌数组
-     * @param cId
-     * @return
+     * @param cId   微博id
+     * @return  List
      */
     public List<CommentMongo_1> selectCommentList(Long cId){
         //封装对象列表查询条件
@@ -87,17 +88,14 @@ public class CommentComponent {
                 .aggregate(aggregation, "Comment", JSONObject.class);
         //返回 List<JSONObject>类型 的查询结果
         CommentMongo_1 commentMongo_1 = new CommentMongo_1();
-        List<CommentMongo_1> list = new ArrayList<>();
-        for (JSONObject mappedResult : reminds.getMappedResults()) {
-            commentMongo_1.setCommentId((Long) mappedResult.get("_id"));
-            commentMongo_1.setUId((Long) mappedResult.get("uId"));
-            commentMongo_1.setContent((String) mappedResult.get("content"));
-            commentMongo_1.setDate((String) mappedResult.get("date"));
-            commentMongo_1.setLikeList((List<Long>) mappedResult.get("likeList"));
-            list.add(commentMongo_1);
-        }
+
+        JSONObject jsonObjects = reminds.getMappedResults().get(0);
+
+        List<CommentMongo_1> list = (List<CommentMongo_1>) jsonObjects.get("commentList");
+
         return list;
     }
+
 
     /**
      * 将当前用户的评论消息存到mongodb，以便于推送给微博发布者
@@ -105,7 +103,6 @@ public class CommentComponent {
      * @param u2Id  评论的用户的id
      * @return boolean
      */
-    @Transactional
     public boolean addCommentMessage(Long u1Id, Long u2Id){
         //从redis缓存获取当前用户的所有信息
         UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + u2Id);

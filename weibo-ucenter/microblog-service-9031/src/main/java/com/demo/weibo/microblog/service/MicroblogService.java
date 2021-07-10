@@ -12,11 +12,13 @@ public interface MicroblogService {
 
     R deleteWeibo(Long uId, Long cId);
 
-    List<Weibo> findAllWeibo(Long uId);
+    R findAllWeibo(Long uId, Long page, Long limit);
 
     R findWeiboById(Long cId);
 
     List<Weibo> findAllWeiboVideo();
+
+    R updateWeiboInfo(Microblog microblog);
 
     List<Microblog> SearchInDbMicroblog(List<Long> needSearchCId);
 

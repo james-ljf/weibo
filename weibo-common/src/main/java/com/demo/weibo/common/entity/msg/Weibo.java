@@ -2,13 +2,19 @@ package com.demo.weibo.common.entity.msg;
 
 import com.demo.weibo.common.entity.Microblog;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
+
+import java.util.List;
 
 
 @Data
 @Accessors(chain = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class Weibo {
 
     /**
@@ -32,6 +38,11 @@ public class Weibo {
      * 微博实体
      */
     private Microblog microblog;
+
+    /**
+     * 微博图片数组
+     */
+    private List<String> imageList;
 
     /**
      * 微博发布时间

@@ -2,6 +2,7 @@ package com.demo.weibo.api.client;
 
 import com.alibaba.fastjson.JSONObject;
 import com.demo.weibo.common.entity.UserDetail;
+import com.demo.weibo.common.entity.mongo.UserAttentionMongo;
 import com.demo.weibo.common.util.R;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +54,6 @@ public interface UserClient {
      * @return  List
      */
     @GetMapping("/user/attention/myself-attention")
-    List<JSONObject> findAllMyAttention(@RequestParam("uId") Long uId);
+    List<UserAttentionMongo> findAllMyAttention(@RequestParam("uId") Long uId);
 
 }

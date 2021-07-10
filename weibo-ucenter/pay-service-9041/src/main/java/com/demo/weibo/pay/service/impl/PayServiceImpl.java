@@ -123,8 +123,11 @@ public class PayServiceImpl implements PayService {
             params.put("strategy", "3");
 
             //调用添加会员业务
-            vipClient.rechargeVip(USER_ORDER);
+            R r = vipClient.rechargeVip(USER_ORDER);
 
+            if (r.getMessage().equals("续费成功")){
+                USER_ORDER.setOName("续费会员");
+            }
             //将订单存到数据库
             userOrderMapper.insert(USER_ORDER);
 

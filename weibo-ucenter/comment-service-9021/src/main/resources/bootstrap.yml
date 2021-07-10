@@ -1,7 +1,6 @@
 #comment-service port from 9021 to 9030
 server:
   port: 9021
-
 spring:
   data:
     mongodb:

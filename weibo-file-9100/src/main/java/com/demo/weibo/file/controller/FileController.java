@@ -16,12 +16,12 @@ public class FileController {
 
     /**
      * 上传图片
-     * @param files 文件数组
+     * @param file 文件数组
      * @return  String
      */
     @PostMapping("/image")
-    public List<String> uploadImage(@RequestBody List<MultipartFile> files){
-        return fileService.uploadImageFile(files);
+    public List<String> uploadImage(MultipartFile[] file){
+        return fileService.uploadImageFile(file);
     }
 
     /**

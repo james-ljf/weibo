@@ -1,9 +1,12 @@
 package com.demo.weibo.microblog.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.demo.weibo.common.entity.MicroblogOperation;
 import com.demo.weibo.common.entity.UserDetail;
+import com.demo.weibo.common.entity.mongo.MicroblogPojo;
 import com.demo.weibo.common.entity.msg.UserMessage;
 import com.demo.weibo.common.entity.msg.U2;
+import com.demo.weibo.common.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -23,8 +27,6 @@ public class MicroblogComponent {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
 
 
     /**
@@ -34,9 +36,9 @@ public class MicroblogComponent {
      * @param list 要查询的内嵌数组名
      * @return JSONObject
      */
-    public JSONObject selectList(Long id1, Long id2, String list){
+    public MicroblogPojo selectList(Long id1, Long id2, String list){
         //存放返回的json对象
-        JSONObject a = null;
+        MicroblogPojo a = null;
         //封装对象列表查询条件
         List<AggregationOperation> commonOperations = new ArrayList<>();
         //1. 指定查询主文档
@@ -55,12 +57,12 @@ public class MicroblogComponent {
 
         //创建管道查询对象
         Aggregation aggregation = Aggregation.newAggregation(commonOperations);
-        AggregationResults<JSONObject> reminds = mongoTemplate
-                .aggregate(aggregation, "WeiboAll", JSONObject.class);
-        List<JSONObject> mappedResults = reminds.getMappedResults();
+        AggregationResults<MicroblogPojo> reminds = mongoTemplate
+                .aggregate(aggregation, "WeiboAll", MicroblogPojo.class);
+        List<MicroblogPojo> mappedResults = reminds.getMappedResults();
         if (mappedResults.size() > 0) {
             //获取attentionList数组的一个对象
-            a  = JSONObject.parseObject(mappedResults.get(0).getJSONObject(list).toJSONString());
+            a  = mappedResults.get(0);
         }
         return a;
     }
@@ -70,7 +72,7 @@ public class MicroblogComponent {
      * @param uId
      * @return
      */
-    public List<JSONObject> selectLikeList(Long uId){
+    public List<MicroblogPojo> selectLikeList(Long uId){
         //封装对象列表查询条件
         List<AggregationOperation> commonOperations = new ArrayList<>();
         //指定查询主文档
@@ -81,8 +83,8 @@ public class MicroblogComponent {
         commonOperations.add(project);
         //创建管道查询对象
         Aggregation aggregation = Aggregation.newAggregation(commonOperations);
-        AggregationResults<JSONObject> reminds = mongoTemplate
-                .aggregate(aggregation, "WeiboAll", JSONObject.class);
+        AggregationResults<MicroblogPojo> reminds = mongoTemplate
+                .aggregate(aggregation, "WeiboAll", MicroblogPojo.class);
         //返回 List<JSONObject>类型 的查询结果
         return reminds.getMappedResults();
     }
@@ -93,25 +95,21 @@ public class MicroblogComponent {
      * @param u2Id  点赞的用户的id
      * @return boolean
      */
-    @Transactional
-    public boolean addLikeMessage(Long u1Id, Long u2Id){
-        //从redis缓存获取当前用户的所有信息
-        UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + u2Id);
+    public boolean addLikeMessage(Long u1Id, Long u2Id, UserDetail userDetail){
+
         if (userDetail == null){
             return false;
         }
         //判断mongodb是否存在该用户的消息集合
-        UserMessage userMessage = mongoTemplate.findById(u1Id, UserMessage.class);
+        UserMessage userMessage = mongoTemplate.findOne(Query.query(Criteria.where("_id").is(u1Id)), UserMessage.class);
         //创建U2对象，数组形式存放消息
         U2 u2 = new U2();
-        u2.setU2Id(u2Id).setContent(userDetail.getNickname() + "点赞了你的微博").setCode(0);
+        u2.setU2Id(u2Id).setContent(userDetail.getNickname() + "点赞了你的微博").setCode(0).setDate(DateUtil.dateTime(new Date()));
         if (userMessage == null) {
             //不存在，则创建
             userMessage = new UserMessage();
             userMessage.setU1Id(u1Id);
-            List<U2> u2List = new ArrayList<>();
-            u2List.add(u2);
-            userMessage.setMsgList(u2List);
+            userMessage.setMsgList(new ArrayList<>());
             mongoTemplate.save(userMessage);
             return true;
         }

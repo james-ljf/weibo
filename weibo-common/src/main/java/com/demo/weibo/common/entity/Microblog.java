@@ -19,8 +19,6 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-@AllArgsConstructor
-@NoArgsConstructor
 public class Microblog {
 
     /**
@@ -80,7 +78,7 @@ public class Microblog {
     /**
      * 微博图片url
      */
-    private List<String> cImage;
+    private String cImage;
 
     /**
      * 微博视频url

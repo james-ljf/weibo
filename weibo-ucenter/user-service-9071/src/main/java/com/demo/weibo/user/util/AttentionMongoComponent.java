@@ -1,11 +1,14 @@
 package com.demo.weibo.user.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.demo.weibo.common.entity.MicroblogOperation;
 import com.demo.weibo.common.entity.UserAttention;
 //import com.demo.weibo.user.repository.UserAttentionRepository;
 import com.demo.weibo.common.entity.UserDetail;
+import com.demo.weibo.common.entity.mongo.UserAttentionMongo;
 import com.demo.weibo.common.entity.msg.U2;
 import com.demo.weibo.common.entity.msg.UserMessage;
+import com.demo.weibo.common.util.DateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -82,7 +86,7 @@ public class AttentionMongoComponent {
      * @param uId
      * @return
      */
-    public List<JSONObject> selectAttentionList(Long uId){
+    public List<UserAttentionMongo> selectAttentionList(Long uId){
         //封装对象列表查询条件
         List<AggregationOperation> commonOperations = new ArrayList<>();
         //指定查询主文档
@@ -95,8 +99,13 @@ public class AttentionMongoComponent {
         Aggregation aggregation = Aggregation.newAggregation(commonOperations);
         AggregationResults<JSONObject> reminds = mongoTemplate
                 .aggregate(aggregation, "UserAttention", JSONObject.class);
-        //返回 List<JSONObject>类型 的查询结果
-        return reminds.getMappedResults();
+
+        //返回 List<UserAttentionMongo>类型 的查询结果
+        List<UserAttentionMongo> list = new ArrayList<>();
+
+        list= (List<UserAttentionMongo>) reminds.getMappedResults().get(0).get("attentionList");
+
+        return list;
     }
 
     /**
@@ -104,7 +113,7 @@ public class AttentionMongoComponent {
      * @param uId
      * @return
      */
-    public List<JSONObject> selectFansList(Long uId){
+    public List<UserAttentionMongo> selectFansList(Long uId){
         //封装对象列表查询条件
         List<AggregationOperation> commonOperations = new ArrayList<>();
         //指定查询主文档
@@ -115,8 +124,8 @@ public class AttentionMongoComponent {
         commonOperations.add(project);
         //创建管道查询对象
         Aggregation aggregation = Aggregation.newAggregation(commonOperations);
-        AggregationResults<JSONObject> reminds = mongoTemplate
-                .aggregate(aggregation, "UserAttention", JSONObject.class);
+        AggregationResults<UserAttentionMongo> reminds = mongoTemplate
+                .aggregate(aggregation, "UserAttention", UserAttentionMongo.class);
         //返回 List<JSONObject>类型 的查询结果
         return reminds.getMappedResults();
     }
@@ -127,7 +136,7 @@ public class AttentionMongoComponent {
      * @param uId
      * @return
      */
-    public List<JSONObject> selectFriendList(Long uId){
+    public List<UserAttentionMongo> selectFriendList(Long uId){
         //封装对象列表查询条件
         List<AggregationOperation> commonOperations = new ArrayList<>();
         //指定查询主文档
@@ -145,8 +154,8 @@ public class AttentionMongoComponent {
         commonOperations.add(match2);
         //创建管道查询对象
         Aggregation aggregation = Aggregation.newAggregation(commonOperations);
-        AggregationResults<JSONObject> reminds = mongoTemplate
-                .aggregate(aggregation, "UserAttention", JSONObject.class);
+        AggregationResults<UserAttentionMongo> reminds = mongoTemplate
+                .aggregate(aggregation, "UserAttention", UserAttentionMongo.class);
         //返回 List<JSONObject>类型 的查询结果
         return reminds.getMappedResults();
     }
@@ -157,7 +166,7 @@ public class AttentionMongoComponent {
      * @param u2Id  被关注的用户的id
      * @return boolean
      */
-    @Transactional
+
     public boolean addAttentionMessage(Long u1Id, Long u2Id){
         //从redis缓存获取当前用户的所有信息
         UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + u1Id);
@@ -165,21 +174,19 @@ public class AttentionMongoComponent {
             return false;
         }
         //判断mongodb是否存在该用户的消息集合
-        UserMessage userMessage = mongoTemplate.findById(u2Id, UserMessage.class);
+        UserMessage userMessage = mongoTemplate.findOne(Query.query(Criteria.where("_id").is(u2Id)), UserMessage.class);
         //创建U2对象，数组形式存放消息
         U2 u2 = new U2();
-        u2.setU2Id(u1Id).setContent(userDetail.getNickname() + "关注了你").setCode(0);
+        u2.setU2Id(u1Id).setContent(userDetail.getNickname() + "关注了你").setCode(0).setDate(DateUtil.dateTime(new Date()));
         if (userMessage == null) {
             //不存在，则创建
             userMessage = new UserMessage();
             userMessage.setU1Id(u2Id);
             List<U2> u1List = new ArrayList<>();
-            u1List.add(u2);
             userMessage.setMsgList(u1List);
             mongoTemplate.save(userMessage);
-            return true;
         }
-        //存在，则插入到内嵌对象数组里
+        //插入到内嵌对象数组里
         Query query = Query.query(Criteria.where("_id").is(u2Id));
         Update update = new Update();
         update.addToSet("msgList", u2);
