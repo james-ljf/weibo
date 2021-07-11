@@ -43,9 +43,9 @@ public class CommentController {
      * @param param 微博id和评论id
      * @return  R
      */
-    @GetMapping("/remove")
+    @PostMapping("/remove")
     @UserLoginAnnotation
-    public R removeComment( @RequestBody Map<String, Object> param){
+    public R removeComment(HttpServletRequest request, @RequestBody Map<String, Object> param){
         return commentService.removeComment(param);
     }
 

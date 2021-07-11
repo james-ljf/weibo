@@ -2,6 +2,7 @@ package com.demo.weibo.user.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.demo.weibo.common.entity.UserAttention;
 import com.demo.weibo.common.entity.UserDetail;
 import com.demo.weibo.common.entity.mongo.UserAttentionMongo;
@@ -185,6 +186,8 @@ public class UserAttentionServiceImpl implements UserAttentionService {
             redisTemplate.opsForValue().set("UserDetail:" + userDetail_2.getUId(), userDetail_2);
             redisTemplate.opsForValue().set("UserDetail:" + userDetail.getUId(), userDetail);
 
+
+
             //添加被关注用户到当前用户集合的attentionlist对象数组中
             Query query = Query.query(Criteria.where("_id").is(userAttention.getU1Id()));
             Update update = new Update();
@@ -203,6 +206,14 @@ public class UserAttentionServiceImpl implements UserAttentionService {
         //重新将两个用户信息更新到缓存
         redisTemplate.opsForValue().set("UserDetail:" + userDetail_2.getUId(), userDetail_2);
         redisTemplate.opsForValue().set("UserDetail:" + userDetail.getUId(), userDetail);
+
+        UpdateWrapper<UserDetail> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("u_id", userDetail.getUId());
+        userDetailMapper.update(userDetail, updateWrapper);
+
+        updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("u_id", userDetail_2.getUId());
+        userDetailMapper.update(userDetail_2, updateWrapper);
 
         return R.ok("关注成功");
     }
@@ -251,6 +262,14 @@ public class UserAttentionServiceImpl implements UserAttentionService {
             //重新存进缓存
             redisTemplate.opsForValue().set("UserDetail:" + userDetail.getUId(), userDetail);
             redisTemplate.opsForValue().set("UserDetail:" + userDetail_2.getUId(), userDetail_2);
+
+            UpdateWrapper<UserDetail> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("u_d", userDetail.getUId());
+            userDetailMapper.update(userDetail, updateWrapper);
+
+            updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("u_d", userDetail_2.getUId());
+            userDetailMapper.update(userDetail_2, updateWrapper);
 
             //删除另一个用户的粉丝列表里的当前用户
             query = Query.query(Criteria.where("_id").is(userAttentionMongo.getU2Id()));
@@ -325,7 +344,6 @@ public class UserAttentionServiceImpl implements UserAttentionService {
 
         //获取当前用户关注数组
         List<UserAttentionMongo> attentionList = attentionMongoComponent.selectAttentionList(uId);
-        System.out.println(attentionList);
         if (attentionList != null && attentionList.size() > 0){
 
             return attentionList;
@@ -336,10 +354,12 @@ public class UserAttentionServiceImpl implements UserAttentionService {
     @Override
     public R findAllUserFriend(Long uId) {
         List<UserAttentionMongo> friendList = attentionMongoComponent.selectFriendList(uId);
-        System.out.println("好友列表" + friendList);
+
+        UserDetail userDetailMe = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + uId);
+
         //判断是否为空
         if (friendList.isEmpty()){
-            return R.error("您目前没有好友");
+            return R.error("您目前没有好友").addData("myself", userDetailMe);
         }
         //新建对象数组存放好友数据
         List<FriendList> mapList = new ArrayList<>();
@@ -356,8 +376,8 @@ public class UserAttentionServiceImpl implements UserAttentionService {
             mapList.add(uFriendList);
 
         }
-        UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + uId);
-        return R.ok("获取好友列表成功").addData("friendList", mapList).addData("myself", userDetail);
+
+        return R.ok("获取好友列表成功").addData("friendList", mapList).addData("myself", userDetailMe);
     }
 
     @Override

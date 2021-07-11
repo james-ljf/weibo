@@ -85,7 +85,7 @@ public class AccountController {
     @UserLoginAnnotation
     public R updateUserPassword(HttpServletRequest request, @RequestBody Map<String, Object> param){
         User user = (User) request.getAttribute("weiboUser");
-        return null;
+        return accountService.updateUserPassword(user.getId(), param);
     }
 
 

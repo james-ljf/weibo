@@ -5,6 +5,10 @@ import com.demo.weibo.common.util.R;
 
 public interface UserAuthenticationService {
 
-    public R addAuthentication(UserAuthentication userAuthentication);
+    R addAuthentication(UserAuthentication userAuthentication);
+
+    R selectAuthentication(Long uId);
+
+    R selectAuthenticationById(Long uId);
 
 }

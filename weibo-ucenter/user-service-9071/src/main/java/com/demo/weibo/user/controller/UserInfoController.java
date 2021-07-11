@@ -48,19 +48,31 @@ public class UserInfoController {
     }
 
     /**
-     * 查询某用户所有信息
-     * @param uId
-     * @return
+     * 查询某用户所有信息(已登录)
+     * @param uId   用户id
+     * @return  R
      */
     @GetMapping("/all/{uId}")
-    public R selectUserAll( @PathVariable Long uId){
-        return userInfoService.selectUserAll(uId);
+    @UserLoginAnnotation()
+    public R selectUserAll(HttpServletRequest request, @PathVariable Long uId){
+        User user = (User) request.getAttribute("weiboUser");
+        return userInfoService.selectUserAllById(user.getId(), uId);
+    }
+
+    /**
+     * 查询某用户所有信息(未登录)
+     * @param uId   用户id
+     * @return  R
+     */
+    @GetMapping("/user-all/{uId}")
+    public R selectUserAll(@PathVariable Long uId){
+        return userInfoService.selectUserAllById(0L, uId);
     }
 
     /**
      * 查询自己的所有信息
-     * @param request
-     * @return
+     * @param request   获取自己登录信息
+     * @return  R
      */
     @GetMapping("/my-all")
     @UserLoginAnnotation
@@ -82,7 +94,7 @@ public class UserInfoController {
      * 更新用户信息
      * @param request 获取用户id
      * @param userDetail 要修改的信息
-     * @return r
+     * @return R
      */
     @UserLoginAnnotation
     @PostMapping("/update")
@@ -93,18 +105,39 @@ public class UserInfoController {
     }
 
     /**
+     * 更新用户信息（服务调用）
+     * @param userDetail    用户实体
+     * @return  R
+     */
+    @PostMapping("/update-info")
+    public R updateUserInfoByPojo(@RequestBody UserDetail userDetail){
+        return userInfoService.updateUserInfoByPojo(userDetail);
+    }
+
+    /**
      * 添加头像
      * @param request 获取用户id
      * @return r
      */
-
     @GetMapping("/add-avatar")
     @UserLoginAnnotation
     public R uploadUserAvatar(HttpServletRequest request, @RequestParam("avatar") String avatar){
         User user = (User) request.getAttribute("weiboUser");
-        if(user == null){
-            return R.error("请先登录");
-        }
+
         return userInfoService.uploadUserAvatar(user.getId(), avatar);
+    }
+
+    /**
+     * 选择用户资料封面
+     * @param request   获取当前用户
+     * @param image 图片
+     * @return  R
+     */
+    @GetMapping("/add-cover")
+    @UserLoginAnnotation
+    public R addUserCover(HttpServletRequest request, @RequestParam("image") String image){
+        User user = (User) request.getAttribute("weiboUser");
+
+        return userInfoService.addUserCover(user.getId(), image);
     }
 }

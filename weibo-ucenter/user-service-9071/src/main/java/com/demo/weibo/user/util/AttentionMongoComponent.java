@@ -35,9 +35,9 @@ public class AttentionMongoComponent {
 
     /**
      * 查询mongodb集合内的数组中的某个对象
-     * @param id1
-     * @param id2
-     * @return
+     * @param id1   当前用户
+     * @param id2   要查的用户
+     * @return  JSONObject
      */
     public JSONObject selectList(Long id1, Long id2){
         //存放返回的json对象

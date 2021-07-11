@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.experimental.Accessors;
-
 import java.util.Date;
+import static com.baomidou.mybatisplus.annotation.IdType.AUTO;
 
 @Data
 @Accessors(chain = true)
@@ -14,7 +14,7 @@ public class UserAuthentication {
     /**
      * id
      */
-    @TableId
+    @TableId(type = AUTO)
     private Integer id;
 
     /**

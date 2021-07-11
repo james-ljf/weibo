@@ -14,7 +14,11 @@ public interface MicroblogService {
 
     R findAllWeibo(Long uId, Long page, Long limit);
 
+    R findAllMyWeibo(Long uId);
+
     R findWeiboById(Long cId);
+
+    R findAllWeiboByUId(Long u1Id,Long u2Id);
 
     List<Weibo> findAllWeiboVideo();
 

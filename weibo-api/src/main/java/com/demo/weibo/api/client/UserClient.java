@@ -43,7 +43,7 @@ public interface UserClient {
 
     /**
      * 查询自己所有信息
-     * @return
+     * @return List
      */
     @PostMapping("/user/info/all")
     List<UserDetail> selectAll();
@@ -55,5 +55,13 @@ public interface UserClient {
      */
     @GetMapping("/user/attention/myself-attention")
     List<UserAttentionMongo> findAllMyAttention(@RequestParam("uId") Long uId);
+
+    /**
+     * 更新用户信息
+     * @param userDetail    用户实体
+     * @return  R
+     */
+    @PostMapping("/user/info/update-info")
+    R updateUserInfoByPojo(@RequestBody UserDetail userDetail);
 
 }

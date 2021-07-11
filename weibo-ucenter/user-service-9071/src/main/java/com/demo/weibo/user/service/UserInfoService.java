@@ -14,9 +14,15 @@ public interface UserInfoService {
 
     R selectUserAll(Long uId);
 
+    R selectUserAllById(Long myId, Long uId);
+
     R updateUserInfo(UserDetail userDetail);
+
+    R updateUserInfoByPojo(UserDetail userDetail);
 
     R uploadUserAvatar(Long uId, String avatar);
 
     List<UserDetail> selectAll();
+
+    R addUserCover(Long uId, String image);
 }

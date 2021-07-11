@@ -1,6 +1,5 @@
 package com.demo.weibo.microblog.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -75,13 +74,15 @@ public class MicroblogServiceImpl implements MicroblogService {
                 .setMicroblog(microblog)
                 .setTime(DateUtil.dateTimeMM(microblog.getCTime()))
                 .setCode(0)
-                .setAttention(0)
                 .setHot(microblog.getCHeat());
 
         if (microblog.getCImage() != null){
             List<String> stringList = Arrays.asList(microblog.getCImage().split(","));
             weibo.setImageList(stringList);
         }
+
+        //更新到数据库
+        userClient.updateUserInfoByPojo(userDetail);
 
         //返回微博和用户信息
         return result > 0 ? R.ok("发布成功").addData("weibo", weibo) : R.error("发布失败");
@@ -105,6 +106,9 @@ public class MicroblogServiceImpl implements MicroblogService {
             userDetail.setArticle(userDetail.getArticle() - 1);
             redisTemplate.opsForValue().set("UserDetail:" + uId, userDetail);
         }
+
+        //更新用户数据库
+        userClient.updateUserInfoByPojo(userDetail);
 
         return result > 0 ? R.ok("删除成功") : R.error("删除失败");
     }
@@ -210,6 +214,32 @@ public class MicroblogServiceImpl implements MicroblogService {
     }
 
     @Override
+    public R findAllMyWeibo(Long uId) {
+        QueryWrapper<Microblog> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("u_id", uId);
+        List<Microblog> microblogList = microblogMapper.selectList(queryWrapper);
+        if (microblogList.size() < 1){
+            return R.error("你没有发布微博");
+        }
+        List<Weibo> weiboList = new ArrayList<>();
+
+        for (Microblog microblog : microblogList) {
+            Weibo weibo = new Weibo();
+            if (microblog.getCImage() != null){
+                List<String> stringList = Arrays.asList(microblog.getCImage().split(","));
+                weibo.setImageList(stringList);
+            }
+            weibo.setMicroblog(microblog).setTime(DateUtil.dateTimeMM(microblog.getCTime()));
+            weiboList.add(weibo);
+        }
+
+        //时间排序
+        weiboList.sort(Comparator.comparing(Weibo::getTime).reversed());
+
+        return R.ok("查询成功").addData("weiboList", weiboList);
+    }
+
+    @Override
     public R findWeiboById(Long cId) {
         Microblog microblog = (Microblog) redisTemplate.opsForValue().get("weibo:" + cId);
 
@@ -243,6 +273,61 @@ public class MicroblogServiceImpl implements MicroblogService {
         redisTemplate.opsForValue().set("weibo:" + microblog.getId(), microblog);
 
         return R.ok("查询成功").addData("weibo", weibo).addData("commentList", list);
+    }
+
+    @Override
+    public R findAllWeiboByUId(Long u1Id, Long u2Id) {
+        //数据库查询用户的所有微博
+        QueryWrapper<Microblog> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("u_id", u2Id);
+        List<Microblog> microblogList = microblogMapper.selectList(queryWrapper);
+
+        //如果为空
+        if (microblogList.size() == 0){
+            return R.error("没有发布微博");
+        }
+
+        //存放数据,前端显示
+        List<Weibo> weiboList = new ArrayList<>();
+
+        //遍历查询出来的微博
+        for (Microblog microblog : microblogList) {
+
+            Weibo weibo = new Weibo();
+
+            //从缓存获取当前用户的信息
+            UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + microblog.getUId());
+
+            //如果自己已经登录
+            if (u1Id != 0L){
+
+                //查询mongodb微博的点赞数组是否有当前登录用户
+                MicroblogPojo object = microblogComponent.selectList(microblog.getId(), u1Id, "likeList");
+
+                //如果存在，则当前用户已点赞该微博
+                if (object != null){
+                    weibo.setCode(1);
+                }
+
+            }
+
+            //设置weibo实体参数
+            assert userDetail != null;
+            weibo.setId(microblog.getId())
+                    .setMicroblog(microblog)
+                    .setTime(DateUtil.dateTimeMM(microblog.getCTime()))
+                    .setAvatar(userDetail.getAvatar());
+
+
+            if (microblog.getCImage() != null){
+                List<String> stringList = Arrays.asList(microblog.getCImage().split(","));
+                weibo.setImageList(stringList);
+            }
+            // 添加到数组里
+            weiboList.add(weibo);
+        }
+
+        return R.ok("成功查询该用户的微博").addData("weiboList", weiboList);
     }
 
     @Override

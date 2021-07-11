@@ -1,11 +1,13 @@
 package com.demo.weibo.vip.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.demo.weibo.common.entity.UserDetail;
-import com.demo.weibo.common.entity.UserOrder;
-import com.demo.weibo.common.entity.UserVip;
+import com.demo.weibo.common.entity.*;
 import com.demo.weibo.common.util.DateUtil;
 import com.demo.weibo.common.util.R;
+import com.demo.weibo.common.util.id.IdGenerator;
+import com.demo.weibo.vip.mapper.UserVipExchangeMapper;
+import com.demo.weibo.vip.mapper.UserVipIntegralMapper;
 import com.demo.weibo.vip.mapper.UserVipMapper;
 import com.demo.weibo.vip.service.VipService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +17,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class VipServiceImpl implements VipService {
 
     @Autowired
     private UserVipMapper userVipMapper;
+
+    @Autowired
+    private UserVipIntegralMapper userVipIntegralMapper;
+
+    @Autowired
+    private UserVipExchangeMapper userVipExchangeMapper;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -115,6 +124,46 @@ public class VipServiceImpl implements VipService {
             return R.error("您的会员已过期");
         }
         return R.ok("查询成功").addData("userVip", userVip);
+    }
+
+    @Override
+    @Transactional
+    public R exchangeVipGoods(Long uId, Long gId) {
+
+        //查询数据库获取物品信息
+        UserVipIntegral userVipIntegral = userVipIntegralMapper.selectById(gId);
+        if (userVipIntegral == null){
+            return R.error("该物品不存在");
+        }
+
+        UserVipExchange userVipExchange = new UserVipExchange();
+
+        //设置兑换会员物品对象的参数
+        userVipExchange.setId(IdGenerator.snowflakeId())
+                .setUId(uId)
+                .setCreateTime(DateUtil.dateTimeMM(new Date()))
+                .setVId(userVipIntegral.getId())
+                .setVImage(userVipIntegral.getIImage());
+
+        //插入兑换物品数据库
+        int result = userVipExchangeMapper.insert(userVipExchange);
+
+        return result > 0 ? R.ok("兑换成功") : R.error("兑换失败");
+    }
+
+    @Override
+    public R selectMyVipGoods(Long uId) {
+
+        //数据库查自己兑换的物品列表
+        QueryWrapper<UserVipExchange> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("u_id", uId);
+        List<UserVipExchange> userVipExchangeList = userVipExchangeMapper.selectList(queryWrapper);
+
+        if (userVipExchangeList.size()  == 0){
+            return R.error("什么都没兑换");
+        }
+
+        return R.ok("背景图查询成功").addData("userGoods", userVipExchangeList);
     }
 
 }

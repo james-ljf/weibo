@@ -106,10 +106,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public R removeComment(Map<String, Object> params) {
         //微博id
-        Long cId = (Long) params.get("cId");
+        long cId = Long.parseLong((String) params.get("cId"));
 
         //评论id
-        Long commentId = (Long) params.get("commentId");
+        long commentId = Long.parseLong((String) params.get("commentId"));
 
         //判断微博是否存在
         Microblog microblog = (Microblog) redisTemplate.opsForValue().get("weibo:" + cId);
@@ -134,6 +134,9 @@ public class CommentServiceImpl implements CommentService {
         //更新当前微博的评论数量到缓存里
         microblog.setCComment(microblog.getCComment()-1);
         redisTemplate.opsForValue().set("weibo:" + microblog.getId(), microblog);
+
+        //更新数据库
+        microblogClient.updateWeiboInfo(microblog);
 
         return R.ok("删除评论成功");
     }

@@ -60,6 +60,7 @@ public class MicroblogController {
      * @return R
      */
     @GetMapping("/delete")
+    @UserLoginAnnotation
     public R deleteMicroblog(HttpServletRequest request,
                              @RequestParam("cid") Long cId){
         User user = (User) request.getAttribute("weiboUser");
@@ -90,6 +91,18 @@ public class MicroblogController {
     }
 
     /**
+     * 查询所有微博显示在个人主页
+     * @param request   获取当前用户
+     * @return  R
+     */
+    @PostMapping("/my-all/weibo")
+    @UserLoginAnnotation
+    public R findAllMyWeibo(HttpServletRequest request){
+        User user = (User) request.getAttribute("weiboUser");
+        return microblogService.findAllMyWeibo(user.getId());
+    }
+
+    /**
      * 根据微博id查询微博内容
      * @param cId   微博id
      * @return  R
@@ -100,6 +113,29 @@ public class MicroblogController {
     }
 
     /**
+     * 根据用户id查询发布的所有微博(未登录)
+     * @param uId   用户id
+     * @return  R
+     */
+    @GetMapping("/find-by-uId/{uId}")
+    public R findAllMicroblogByUId(@PathVariable Long uId){
+        return microblogService.findAllWeiboByUId(0L, uId);
+    }
+
+    /**
+     * 根据用户id查询发布的所有微博(已登录)
+     * @param request   获取当前登录用户
+     * @param uId   要查询的用户id
+     * @return  R
+     */
+    @GetMapping("/find-by-uId/login/{uId}")
+    @UserLoginAnnotation
+    public R findAllMicroblogByUId(HttpServletRequest request, @PathVariable Long uId){
+        User user = (User) request.getAttribute("weiboUser");
+        return microblogService.findAllWeiboByUId(user.getId(), uId);
+    }
+
+    /**
      * 查询所有发布了视频的微博
      */
     @PostMapping("/video-all")
@@ -107,7 +143,11 @@ public class MicroblogController {
         return microblogService.findAllWeiboVideo();
     }
 
-
+    /**
+     * 更新微博信息(服务调用)
+     * @param microblog 微博
+     * @return  R
+     */
     @PostMapping("/update")
     public R updateWeiboInfo(@RequestBody Microblog microblog){
         return microblogService.updateWeiboInfo(microblog);
