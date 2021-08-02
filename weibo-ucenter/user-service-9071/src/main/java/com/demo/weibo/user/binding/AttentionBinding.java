@@ -7,7 +7,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.SubscribableChannel;
 
 /**
- * 自定义rocketmq的binding
+ * 自定义rocketmq的binding（消费者）
  */
 public interface AttentionBinding {
 
