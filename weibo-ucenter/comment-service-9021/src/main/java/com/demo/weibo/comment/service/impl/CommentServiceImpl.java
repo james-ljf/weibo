@@ -144,7 +144,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public R selectAllComment(Long cId, Integer strategy) {
         List<CommentMongo_1> objectList = commentComponent.selectCommentList(cId);
-        if (objectList.size() == 0){
+        if (objectList == null || objectList.size() == 0){
             return R.error("没有评论");
         }
 

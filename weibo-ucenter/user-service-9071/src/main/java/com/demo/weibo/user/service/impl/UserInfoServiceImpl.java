@@ -3,7 +3,6 @@ package com.demo.weibo.user.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.demo.weibo.api.client.FileClient;
 import com.demo.weibo.common.entity.UserDetail;
 import com.demo.weibo.common.util.DateUtil;
 import com.demo.weibo.common.util.R;

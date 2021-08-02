@@ -2,6 +2,7 @@ package com.demo.weibo.vip.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.demo.weibo.api.client.UserClient;
 import com.demo.weibo.common.entity.*;
 import com.demo.weibo.common.util.DateUtil;
 import com.demo.weibo.common.util.R;
@@ -33,6 +34,9 @@ public class VipServiceImpl implements VipService {
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Autowired
+    private UserClient userClient;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -67,11 +71,14 @@ public class VipServiceImpl implements VipService {
             UserDetail userDetail = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + userVip.getUId());
             assert userDetail != null;
             userDetail.setVip(1);
+
+            //更新到缓存
             redisTemplate.opsForValue().set("UserDetail:" + userDetail.getUId(), userDetail);
 
             //将会员信息放到缓存
             redisTemplate.opsForValue().set("UserVip:" + userVip.getUId(), userVip);
 
+            userClient.updateUserInfoByPojo(userDetail);
 
             return R.ok("会员充值成功");
         }

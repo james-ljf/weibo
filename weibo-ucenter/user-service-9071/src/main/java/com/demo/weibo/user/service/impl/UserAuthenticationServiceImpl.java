@@ -51,7 +51,7 @@ public class UserAuthenticationServiceImpl implements UserAuthenticationService 
         userDetail.setAuthentication(2);
 
         //存回缓存
-        redisTemplate.opsForValue().set("UserDetail" + userDetail.getUId(), userDetail);
+        redisTemplate.opsForValue().set("UserDetail:" + userDetail.getUId(), userDetail);
 
         //更新数据库
         int res = userDetailMapper.update(userDetail, new UpdateWrapper<UserDetail>().eq("u_id", userDetail.getUId()));

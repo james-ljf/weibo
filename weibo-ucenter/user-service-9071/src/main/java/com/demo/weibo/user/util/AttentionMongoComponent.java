@@ -124,10 +124,13 @@ public class AttentionMongoComponent {
         commonOperations.add(project);
         //创建管道查询对象
         Aggregation aggregation = Aggregation.newAggregation(commonOperations);
-        AggregationResults<UserAttentionMongo> reminds = mongoTemplate
-                .aggregate(aggregation, "UserAttention", UserAttentionMongo.class);
-        //返回 List<JSONObject>类型 的查询结果
-        return reminds.getMappedResults();
+        AggregationResults<JSONObject> reminds = mongoTemplate
+                .aggregate(aggregation, "UserAttention", JSONObject.class);
+        //返回 List<UserAttentionMongo>类型 的查询结果
+        List<UserAttentionMongo> list = new ArrayList<>();
+
+        list= (List<UserAttentionMongo>) reminds.getMappedResults().get(0).get("fansList");
+        return list;
     }
 
 
@@ -150,7 +153,7 @@ public class AttentionMongoComponent {
         commonOperations.add(unwind);
         //指定查询子文档,条件：关注状态为互相关注的
         MatchOperation match2 = Aggregation.match(
-                Criteria.where("attentionList.aCode").is(2));
+                Criteria.where("attentionList.code").is("2"));
         commonOperations.add(match2);
         //创建管道查询对象
         Aggregation aggregation = Aggregation.newAggregation(commonOperations);

@@ -264,7 +264,7 @@ public class UserAttentionServiceImpl implements UserAttentionService {
             redisTemplate.opsForValue().set("UserDetail:" + userDetail_2.getUId(), userDetail_2);
 
             UpdateWrapper<UserDetail> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("u_d", userDetail.getUId());
+            updateWrapper.eq("u_id", userDetail.getUId());
             userDetailMapper.update(userDetail, updateWrapper);
 
             updateWrapper = new UpdateWrapper<>();
@@ -353,8 +353,19 @@ public class UserAttentionServiceImpl implements UserAttentionService {
 
     @Override
     public R findAllUserFriend(Long uId) {
-        List<UserAttentionMongo> friendList = attentionMongoComponent.selectFriendList(uId);
+        //获取用户的关注数组
+        List<UserAttentionMongo> attentionList = attentionMongoComponent.selectAttentionList(uId);
 
+        List<UserAttentionMongo> friendList = new ArrayList<>();
+
+        //遍历，将互相关注的用户加入好友数组里
+        for (UserAttentionMongo userAttentionMongo : attentionList) {
+            if (userAttentionMongo.getCode().equals("2")){
+                friendList.add(userAttentionMongo);
+            }
+        }
+
+        //获取自己的信息
         UserDetail userDetailMe = (UserDetail) redisTemplate.opsForValue().get("UserDetail:" + uId);
 
         //判断是否为空

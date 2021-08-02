@@ -87,6 +87,9 @@ public class CommentComponent {
         AggregationResults<JSONObject> reminds = mongoTemplate
                 .aggregate(aggregation, "Comment", JSONObject.class);
         //返回 List<JSONObject>类型 的查询结果
+        if (reminds.getMappedResults().size() == 0){
+            return null;
+        }
         JSONObject jsonObjects = reminds.getMappedResults().get(0);
 
         //转成对象数组
